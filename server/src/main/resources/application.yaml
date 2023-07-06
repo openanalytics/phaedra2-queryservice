@@ -1,0 +1,21 @@
+server:
+  servlet:
+    context-path: /phaedra/query-service
+  port: 3001
+
+spring:
+  cloud:
+    kubernetes:
+      enabled: false
+  application:
+    name: phaedra-query-service
+  liquibase:
+    enabled: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost
+  jackson:
+    serialization:
+      indent_output: true
