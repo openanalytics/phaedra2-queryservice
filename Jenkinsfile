@@ -72,8 +72,10 @@ pipeline {
         stage('Build Docker image') {
             steps {
                 container('builder') {
-                    configFileProvider([configFile(fileId: 'maven-settings-rsb', variable: 'MAVEN_SETTINGS_RSB')]) {
-                        sh "mvn -s \$MAVEN_SETTINGS_RSB io.fabric8:docker-maven-plugin:build ${env.MVN_ARGS}"
+                    withDockerRegistry([credentialsId: "oa-sa-jenkins-registry", url: "https://registry.openanalytics.eu"]) {
+                        configFileProvider([configFile(fileId: 'maven-settings-rsb', variable: 'MAVEN_SETTINGS_RSB')]) {
+                            sh "mvn -s \$MAVEN_SETTINGS_RSB io.fabric8:docker-maven-plugin:build ${env.MVN_ARGS}"
+                        }
                     }
                 }
             }
@@ -82,8 +84,10 @@ pipeline {
         stage('Push to OA registry') {
             steps {
                 container('builder') {
-                    configFileProvider([configFile(fileId: 'maven-settings-rsb', variable: 'MAVEN_SETTINGS_RSB')]) {
-                        sh "mvn -s \$MAVEN_SETTINGS_RSB io.fabric8:docker-maven-plugin:push -Ddocker.push.registry=${REGISTRY} ${env.MVN_ARGS}"
+                    withDockerRegistry([credentialsId: "oa-sa-jenkins-registry", url: "https://registry.openanalytics.eu"]) {
+                        configFileProvider([configFile(fileId: 'maven-settings-rsb', variable: 'MAVEN_SETTINGS_RSB')]) {
+                            sh "mvn -s \$MAVEN_SETTINGS_RSB io.fabric8:docker-maven-plugin:push -Ddocker.push.registry=${REGISTRY} ${env.MVN_ARGS}"
+                        }
                     }
                 }
             }
