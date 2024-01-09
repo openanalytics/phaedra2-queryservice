@@ -18,7 +18,8 @@
  * You should have received a copy of the Apache License
  * along with this program.  If not, see <http://www.apache.org/licenses/>
  */
-package eu.openanalytics.phaedra.queryservice;
+package eu.openanalytics.phaedra.queryservice.model;
 
-public interface QueryServiceClient {
+public record PlateResultData(Long plateId, Well[] wells, Protocol[] protocols, Feature[] features) {
+
 }
