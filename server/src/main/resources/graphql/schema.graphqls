@@ -1,0 +1,29 @@
+#type Query {
+#    plateResultData(plateId: [ID]): [PlateResultData]
+#}
+#
+#type PlateResultData {
+#    plateId: ID
+#    wells: [WellData]
+#    protocols: [ProtocolData]
+#    features: [FeatureData]
+#}
+#
+#type WellData {
+#    id: ID
+#    type: String
+#    row: Int
+#    column: Int
+#}
+#
+#type ProtocolData {
+#    id: ID
+#    name: String
+#}
+#
+#type FeatureData {
+#    id: ID
+#    name: String
+#}
+#
+#
