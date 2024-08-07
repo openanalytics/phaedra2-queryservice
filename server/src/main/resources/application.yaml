@@ -1,14 +1,17 @@
 server:
   servlet:
     context-path: /phaedra/query-service
-  port: 3001
+  port: 8080
 
 spring:
-  cloud:
-    kubernetes:
-      enabled: false
   application:
     name: phaedra-query-service
+  jackson:
+    serialization:
+      indent_output: true
+  cloud:
+    kubernetes:
+      enabled: true
   liquibase:
     enabled: false
   security:
@@ -16,6 +19,12 @@ spring:
       resourceserver:
         jwt:
           jwk-set-uri: http://localhost
-  jackson:
-    serialization:
-      indent_output: true
+  graphql:
+    graphiql:
+      enabled: true
+
+
+logging:
+  file:
+    name: /var/log/queryservice.log
+
