@@ -1,1 +1,43 @@
+# ---> Java
+# Compiled class file
+*.class
+
+# Log file
+*.log
+
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+
+/.idea/
 /phaedra2-queryservice.iml
+.DS_Store
+
+# Eclipse IDE files
+target/
+.settings/
+.project
+.classpath
+
+application.yml
+/server/target/
+/dto/target/
+/client/target/
+/dto/phaedra2-queryservice-dto.iml
+/client/phaedra2-queryservice-client.iml
+/server/phaedra2-queryservice-server.iml
+/server/liquibase/liquibase.properties
