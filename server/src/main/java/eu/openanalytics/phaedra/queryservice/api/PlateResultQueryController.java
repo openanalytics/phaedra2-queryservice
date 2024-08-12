@@ -35,7 +35,6 @@ public class PlateResultQueryController {
         this.plateResultDataService = plateResultDataService;
     }
 
-    @QueryMapping
     public PlateResultData plateResultData(@Argument Long plateId) {
         return plateResultDataService.getPlateResultData(plateId);
     }
