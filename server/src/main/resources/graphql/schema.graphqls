@@ -57,5 +57,5 @@ type StatsExportRecord {
 }
 
 type Query {
-    exportPlateListData(experimentId: ID): [PlateExportRecord]
+    exportPlateListData(exportDataOptions: ExportDataOptions): [PlateExportRecord]
 }
