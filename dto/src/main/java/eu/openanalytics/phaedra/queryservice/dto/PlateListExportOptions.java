@@ -18,22 +18,22 @@
  * You should have received a copy of the Apache License
  * along with this program.  If not, see <http://www.apache.org/licenses/>
  */
-package eu.openanalytics.phaedra.queryservice.service;
+package eu.openanalytics.phaedra.queryservice.dto;
 
-import eu.openanalytics.phaedra.queryservice.model.PlateResultData;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import eu.openanalytics.phaedra.queryservice.record.FeatureInput;
+import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Service
-public class PlateResultDataService {
+@Data
+@NoArgsConstructor
+@Builder
+@AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class PlateListExportOptions {
+  List<FeatureInput> selectedFeatures;
 
-    private final RestTemplate restTemplate;
-
-    public PlateResultDataService() {
-        this.restTemplate = new RestTemplate();
-    }
-
-    public PlateResultData  getPlateResultData(Long plateId) {
-        return null;
-    }
 }

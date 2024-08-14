@@ -18,22 +18,22 @@
  * You should have received a copy of the Apache License
  * along with this program.  If not, see <http://www.apache.org/licenses/>
  */
-package eu.openanalytics.phaedra.queryservice.service;
+package eu.openanalytics.phaedra.queryservice.config;
 
-import eu.openanalytics.phaedra.queryservice.model.PlateResultData;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import eu.openanalytics.phaedra.util.scalars.Scalars;
+import graphql.schema.GraphQLScalarType;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-@Service
-public class PlateResultDataService {
-
-    private final RestTemplate restTemplate;
-
-    public PlateResultDataService() {
-        this.restTemplate = new RestTemplate();
+@Configuration
+public class GraphQLScalarConfiguration {
+    @Bean
+    public GraphQLScalarType dateScalar() {
+        return Scalars.dateType();
     }
 
-    public PlateResultData  getPlateResultData(Long plateId) {
-        return null;
+    @Bean
+    public GraphQLScalarType floatNaNScalar() {
+        return Scalars.floatNaNType();
     }
 }

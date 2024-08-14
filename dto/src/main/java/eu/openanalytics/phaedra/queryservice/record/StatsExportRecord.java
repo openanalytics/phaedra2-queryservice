@@ -18,22 +18,8 @@
  * You should have received a copy of the Apache License
  * along with this program.  If not, see <http://www.apache.org/licenses/>
  */
-package eu.openanalytics.phaedra.queryservice.service;
+package eu.openanalytics.phaedra.queryservice.record;
 
-import eu.openanalytics.phaedra.queryservice.model.PlateResultData;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+public record StatsExportRecord(String statName, Float value) {
 
-@Service
-public class PlateResultDataService {
-
-    private final RestTemplate restTemplate;
-
-    public PlateResultDataService() {
-        this.restTemplate = new RestTemplate();
-    }
-
-    public PlateResultData  getPlateResultData(Long plateId) {
-        return null;
-    }
 }

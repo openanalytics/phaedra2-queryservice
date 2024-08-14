@@ -1,2 +1,61 @@
+scalar Date
+scalar FloatNaN
+
+input FeatureInput {
+    featureId: ID,
+    featureName: String,
+    protocolName: String
+}
+
+input ExportDataOptions {
+    experimentId: ID,
+    selectedFeatures: [FeatureInput],
+    validatedBy: String,
+    validateOnBegin: Date,
+    validateOnEnd: Date,
+    approvedBy: String,
+    approvedOnBegin: Date,
+    approvedOnEnd: Date,
+    includeInvalidatedPlates: Boolean,
+    includeDisapprovedPlates: Boolean,
+    includeSummeryPlateSummery: Boolean,
+    includeFeatureStats: Boolean,
+    includeWellTypeFeatureStats: Boolean
+}
+
+type PlateExportRecord {
+    experimentId: ID,
+    experimentName: String
+    plateId: ID,
+    barcode: String,
+    plateTemplateId: ID,
+    plateTemplateName: String,
+    validationStatus: String,
+    validatedBy: String,
+    validatedOn: String,
+    approvalStatus: String,
+    approvedBy: String,
+    approvedOn: String,
+    comment: String,
+    drc_count: Int,
+    sdp_count: Int,
+    features: [FeatureExportRecord]
+}
+
+type FeatureExportRecord {
+    resultSetId: Int,
+    protocolId: Int,
+    protocolName: String,
+    featureId: Int,
+    featureName: String,
+    stats: [StatsExportRecord]
+}
+
+type StatsExportRecord {
+    name: String,
+    value: Float
+}
+
 type Query {
+    exportPlateListData(experimentId: ID): [PlateExportRecord]
 }

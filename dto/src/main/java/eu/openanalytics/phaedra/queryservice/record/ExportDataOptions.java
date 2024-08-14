@@ -18,22 +18,16 @@
  * You should have received a copy of the Apache License
  * along with this program.  If not, see <http://www.apache.org/licenses/>
  */
-package eu.openanalytics.phaedra.queryservice.service;
+package eu.openanalytics.phaedra.queryservice.record;
 
-import eu.openanalytics.phaedra.queryservice.model.PlateResultData;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import java.util.Date;
+import java.util.List;
 
-@Service
-public class PlateResultDataService {
+public record ExportDataOptions(long experimentId, List<FeatureInput> selectedFeatures,
+                                String validatedBy, Date validatedOnBegin, Date validatedOnEnd,
+                                String approvedBy, Date approvedOnBegin, Date approvedOnEnd,
+                                Boolean includeInvalidatedPlates, Boolean includeDisapprovedPlates,
+                                Boolean includeSummeryPlateSummery, Boolean includeFeatureStats,
+                                Boolean includeWellTypeFeatureStats) {
 
-    private final RestTemplate restTemplate;
-
-    public PlateResultDataService() {
-        this.restTemplate = new RestTemplate();
-    }
-
-    public PlateResultData  getPlateResultData(Long plateId) {
-        return null;
-    }
 }
