@@ -24,21 +24,21 @@ import java.util.List;
 import lombok.Builder;
 
 @Builder
-public record PlateExportRecord(long experimentId,
-                                String experimentName,
-                                long plateId,
-                                String barcode,
-                                String plateTemplateId,
-                                String plateTemplateName,
-                                String validationStatus,
-                                String validatedBy,
-                                String validatedOn,
-                                String approvalStatus,
-                                String approvedBy,
-                                String approvedOn,
-                                String comment,
-                                int drc_count,
-                                int sdp_count,
-                                List<FeatureExportRecord> features) {
+public record PlateDataRecord(long experimentId,
+                              String experimentName,
+                              long plateId,
+                              String barcode,
+                              String plateTemplateId,
+                              String plateTemplateName,
+                              String validationStatus,
+                              String validatedBy,
+                              String validatedOn,
+                              String approvalStatus,
+                              String approvedBy,
+                              String approvedOn,
+                              String comment,
+                              int drc_count,
+                              int sdp_count,
+                              List<FeatureStatsRecord> features) {
 
 }

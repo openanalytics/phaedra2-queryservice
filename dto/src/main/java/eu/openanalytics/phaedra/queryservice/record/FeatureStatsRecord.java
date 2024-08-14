@@ -20,6 +20,13 @@
  */
 package eu.openanalytics.phaedra.queryservice.record;
 
-public record StatsExportRecord(String statName, Float value) {
+import java.util.List;
+
+public record FeatureStatsRecord(int resultSetId,
+                                 int protocolId,
+                                 String protocolName,
+                                 int featureId,
+                                 String featureName,
+                                 List<StatValueRecord> stats) {
 
 }

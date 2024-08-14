@@ -25,7 +25,7 @@ import eu.openanalytics.phaedra.plateservice.client.exception.UnresolvableObject
 import eu.openanalytics.phaedra.plateservice.dto.ExperimentDTO;
 import eu.openanalytics.phaedra.plateservice.dto.PlateDTO;
 import eu.openanalytics.phaedra.queryservice.record.ExportDataOptions;
-import eu.openanalytics.phaedra.queryservice.record.PlateExportRecord;
+import eu.openanalytics.phaedra.queryservice.record.PlateDataRecord;
 import eu.openanalytics.phaedra.resultdataservice.client.ResultDataServiceClient;
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -48,7 +48,20 @@ public class ExportDataController {
   }
 
   @QueryMapping
-  public List<PlateExportRecord> exportPlateListData(@Argument ExportDataOptions exportDataOptions)
+  public List<PlateDataRecord> exportPlateListData(@Argument ExportDataOptions exportDataOptions)
+      throws UnresolvableObjectException {
+    ExperimentDTO experiment = plateServiceClient.getExperiment(exportDataOptions.experimentId());
+    List<PlateDTO> plates = plateServiceClient.getPlatesByExperiment(exportDataOptions.experimentId());
+
+    List<PlateDTO> filteredPlates = plates.stream()
+        .filter(plate -> isPlateFilteredByOptions(exportDataOptions, plate))
+        .toList();
+
+    return createPlateExportRecords(experiment, filteredPlates);
+  }
+
+  @QueryMapping
+  public List<PlateDataRecord> exportWellData(@Argument ExportDataOptions exportDataOptions)
       throws UnresolvableObjectException {
     ExperimentDTO experiment = plateServiceClient.getExperiment(exportDataOptions.experimentId());
     List<PlateDTO> plates = plateServiceClient.getPlatesByExperiment(exportDataOptions.experimentId());
@@ -85,7 +98,7 @@ public class ExportDataController {
    * @param plates The List of PlateDTO objects to be mapped to PlateExportRecord objects.
    * @return A List of PlateExportRecord objects.
    */
-  private List<PlateExportRecord> createPlateExportRecords(ExperimentDTO experiment, List<PlateDTO> plates) {
+  private List<PlateDataRecord> createPlateExportRecords(ExperimentDTO experiment, List<PlateDTO> plates) {
     return plates.stream()
         .map(plate -> createPlateExportRecord(experiment, plate))
         .toList();
@@ -98,8 +111,8 @@ public class ExportDataController {
    * @param plate The PlateDTO object representing the plate.
    * @return A PlateExportRecord object.
    */
-  private PlateExportRecord createPlateExportRecord(ExperimentDTO experiment, PlateDTO plate) {
-    return PlateExportRecord.builder()
+  private PlateDataRecord createPlateExportRecord(ExperimentDTO experiment, PlateDTO plate) {
+    return PlateDataRecord.builder()
         .experimentId(experiment.getId())
         .experimentName(experiment.getName())
         .plateId(plate.getId())

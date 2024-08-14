@@ -23,7 +23,7 @@ input ExportDataOptions {
     includeWellTypeFeatureStats: Boolean
 }
 
-type PlateExportRecord {
+type PlateDataRecord {
     experimentId: ID,
     experimentName: String
     plateId: ID,
@@ -39,23 +39,52 @@ type PlateExportRecord {
     comment: String,
     drc_count: Int,
     sdp_count: Int,
-    features: [FeatureExportRecord]
+    features: [FeatureStatsRecord]
 }
 
-type FeatureExportRecord {
+type FeatureStatsRecord {
     resultSetId: Int,
     protocolId: Int,
     protocolName: String,
     featureId: Int,
     featureName: String,
-    stats: [StatsExportRecord]
+    stats: [StatValueRecord]
 }
 
-type StatsExportRecord {
+type FeatureValueRecord {
+    featureId: Int,
+    featureName: String,
+    protocolName: String,
+    value: FloatNaN
+}
+
+type WellDataRecord {
+    experimentId: ID,
+    experimentName: String
+    plateId: ID,
+    barcode: String,
+    plateTemplateId: ID,
+    plateTemplateName: String,
+    validationStatus: String,
+    approvalStatus: String,
+    comment: String,
+    wellId: ID,
+    wellNr: Int,
+    rowNr: Int,
+    colNr: Int,
+    wellType: String,
+    substanceName: String,
+    concentration: FloatNaN,
+    isValid: Boolean,
+    features: [FeatureValueRecord],
+}
+
+type StatValueRecord {
     name: String,
-    value: Float
+    value: FloatNaN
 }
 
 type Query {
-    exportPlateListData(exportDataOptions: ExportDataOptions): [PlateExportRecord]
+    exportPlateListData(exportDataOptions: ExportDataOptions): [PlateDataRecord]
+    exportWellData(exportDataOptions: ExportDataOptions): [WellDataRecord]
 }
