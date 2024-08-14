@@ -27,8 +27,10 @@ import eu.openanalytics.phaedra.plateservice.dto.PlateDTO;
 import eu.openanalytics.phaedra.queryservice.record.ExportDataOptions;
 import eu.openanalytics.phaedra.queryservice.record.PlateExportRecord;
 import eu.openanalytics.phaedra.resultdataservice.client.ResultDataServiceClient;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
@@ -104,11 +106,11 @@ public class ExportDataController {
         .barcode(plate.getBarcode())
         .plateTemplateId(plate.getLinkTemplateId())
         .plateTemplateName(plate.getLinkTemplateName())
-        .validationStatus(plate.getValidationStatus().name())
-        .validatedOn(plate.getValidatedOn().toString())
+        .validationStatus(Optional.ofNullable(plate.getValidationStatus()).map(Enum::name).orElse(null))
+        .validatedOn(Optional.ofNullable(plate.getValidatedOn()).map(date -> new SimpleDateFormat("dd-MM-yyyy").format(date)).orElse(null))
         .validatedBy(plate.getApprovedBy())
-        .approvalStatus(plate.getApprovalStatus().name())
-        .approvedOn(plate.getApprovedOn().toString())
+        .approvalStatus(Optional.ofNullable(plate.getApprovalStatus()).map(Enum::name).orElse(null))
+        .approvedOn(Optional.ofNullable(plate.getApprovedOn()).map(date -> new SimpleDateFormat("dd-MM-yyyy").format(date)).orElse(null))
         .approvedBy(plate.getApprovedBy())
         .comment(String.format("%s; %s", plate.getInvalidatedReason(), plate.getDisapprovedReason()))
         .build();
