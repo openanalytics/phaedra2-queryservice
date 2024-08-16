@@ -25,6 +25,7 @@ import eu.openanalytics.phaedra.plateservice.client.exception.UnresolvableObject
 import eu.openanalytics.phaedra.plateservice.dto.ExperimentDTO;
 import eu.openanalytics.phaedra.plateservice.dto.PlateDTO;
 import eu.openanalytics.phaedra.queryservice.record.ExportDataOptions;
+import eu.openanalytics.phaedra.queryservice.record.FeatureInput;
 import eu.openanalytics.phaedra.queryservice.record.FeatureStatsRecord;
 import eu.openanalytics.phaedra.queryservice.record.PlateDataRecord;
 import eu.openanalytics.phaedra.queryservice.record.StatValueRecord;
@@ -38,6 +39,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
@@ -47,6 +50,8 @@ public class ExportDataController {
 
   private final PlateServiceClient plateServiceClient;
   private final ResultDataServiceClient resultDataServiceClient;
+
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   public ExportDataController(PlateServiceClient plateServiceClient,
       ResultDataServiceClient resultDataServiceClient) {
@@ -107,8 +112,15 @@ public class ExportDataController {
   private PlateDataRecord createPlateExportRecord(ExportDataOptions exportDataOptions, ExperimentDTO experiment, PlateDTO plate, List<ResultFeatureStatDTO> featureStats) {
     Map<Long, List<ResultFeatureStatDTO>> plateFeatureStats = featureStats.stream().collect(
         Collectors.groupingBy(ResultFeatureStatDTO::getFeatureId));
+
+    logger.info("Selected features: " + exportDataOptions.selectedFeatures().size());
+    for (FeatureInput featureInput: exportDataOptions.selectedFeatures()) {
+      logger.info("Selected feature id: " + featureInput.featureId());
+      logger.info("Selected feature name: " + featureInput.featureName());
+    }
     List<FeatureStatsRecord> features = plateFeatureStats.entrySet().stream()
         .map(entry -> {
+
           var selectedFeature = exportDataOptions.selectedFeatures().stream().filter(featureInput -> featureInput.featureId() == entry.getKey()).findFirst().get();
           return FeatureStatsRecord.builder()
               .featureId(entry.getKey())
