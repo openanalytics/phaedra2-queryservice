@@ -39,6 +39,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -120,14 +121,17 @@ public class ExportDataController {
     }
     List<FeatureStatsRecord> features = plateFeatureStats.entrySet().stream()
         .map(entry -> {
-
-          var selectedFeature = exportDataOptions.selectedFeatures().stream().filter(featureInput -> featureInput.featureId() == entry.getKey()).findFirst().get();
-          return FeatureStatsRecord.builder()
-              .featureId(entry.getKey())
-              .featureName(selectedFeature.featureName())
-              .protocolName(selectedFeature.protocolName())
-              .stats(entry.getValue().stream().map(this::createStatValueRecord).toList())
-              .build();
+          List<FeatureInput> featureInputs = exportDataOptions.selectedFeatures().stream().filter(featureInput -> entry.getKey().equals(featureInput.featureId())).toList();
+          if (CollectionUtils.isNotEmpty(featureInputs)) {
+            FeatureInput selectedFeature = featureInputs.get(0);
+            return FeatureStatsRecord.builder()
+                .featureId(entry.getKey())
+                .featureName(selectedFeature.featureName())
+                .protocolName(selectedFeature.protocolName())
+                .stats(entry.getValue().stream().map(this::createStatValueRecord).toList())
+                .build();
+          }
+          return null;
         })
         .toList();
 
