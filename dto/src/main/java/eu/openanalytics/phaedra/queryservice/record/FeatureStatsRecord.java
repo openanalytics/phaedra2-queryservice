@@ -21,11 +21,13 @@
 package eu.openanalytics.phaedra.queryservice.record;
 
 import java.util.List;
+import lombok.Builder;
 
-public record FeatureStatsRecord(int resultSetId,
-                                 int protocolId,
+@Builder
+public record FeatureStatsRecord(long resultSetId,
+                                 long protocolId,
                                  String protocolName,
-                                 int featureId,
+                                 long featureId,
                                  String featureName,
                                  List<StatValueRecord> stats) {
 

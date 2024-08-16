@@ -25,12 +25,19 @@ import eu.openanalytics.phaedra.plateservice.client.exception.UnresolvableObject
 import eu.openanalytics.phaedra.plateservice.dto.ExperimentDTO;
 import eu.openanalytics.phaedra.plateservice.dto.PlateDTO;
 import eu.openanalytics.phaedra.queryservice.record.ExportDataOptions;
+import eu.openanalytics.phaedra.queryservice.record.FeatureStatsRecord;
 import eu.openanalytics.phaedra.queryservice.record.PlateDataRecord;
+import eu.openanalytics.phaedra.queryservice.record.StatValueRecord;
 import eu.openanalytics.phaedra.resultdataservice.client.ResultDataServiceClient;
+import eu.openanalytics.phaedra.resultdataservice.client.exception.ResultFeatureStatUnresolvableException;
+import eu.openanalytics.phaedra.resultdataservice.dto.ResultFeatureStatDTO;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
@@ -49,7 +56,7 @@ public class ExportDataController {
 
   @QueryMapping
   public List<PlateDataRecord> exportPlateListData(@Argument ExportDataOptions exportDataOptions)
-      throws UnresolvableObjectException {
+      throws UnresolvableObjectException, ResultFeatureStatUnresolvableException {
     ExperimentDTO experiment = plateServiceClient.getExperiment(exportDataOptions.experimentId());
     List<PlateDTO> plates = plateServiceClient.getPlatesByExperiment(exportDataOptions.experimentId());
 
@@ -57,29 +64,28 @@ public class ExportDataController {
         .filter(plate -> isPlateFilteredByOptions(exportDataOptions, plate))
         .toList();
 
-    return createPlateExportRecords(experiment, filteredPlates);
+    Map<Long, List<ResultFeatureStatDTO>> plateFeatureStats = new HashMap<>();
+    for (PlateDTO plate : filteredPlates) {
+      List<ResultFeatureStatDTO> featureStats = resultDataServiceClient.getLatestResultFeatureStatsForPlateId(plate.getId());
+      plateFeatureStats.put(plate.getId(), featureStats);
+    }
+
+    return createPlateExportRecords(experiment, filteredPlates, plateFeatureStats);
   }
 
-  @QueryMapping
-  public List<PlateDataRecord> exportWellData(@Argument ExportDataOptions exportDataOptions)
-      throws UnresolvableObjectException {
-    ExperimentDTO experiment = plateServiceClient.getExperiment(exportDataOptions.experimentId());
-    List<PlateDTO> plates = plateServiceClient.getPlatesByExperiment(exportDataOptions.experimentId());
+//  @QueryMapping
+//  public List<PlateDataRecord> exportWellData(@Argument ExportDataOptions exportDataOptions)
+//      throws UnresolvableObjectException {
+//    ExperimentDTO experiment = plateServiceClient.getExperiment(exportDataOptions.experimentId());
+//    List<PlateDTO> plates = plateServiceClient.getPlatesByExperiment(exportDataOptions.experimentId());
+//
+//    List<PlateDTO> filteredPlates = plates.stream()
+//        .filter(plate -> isPlateFilteredByOptions(exportDataOptions, plate))
+//        .toList();
+//
+//    return createPlateExportRecords(experiment, filteredPlates);
+//  }
 
-    List<PlateDTO> filteredPlates = plates.stream()
-        .filter(plate -> isPlateFilteredByOptions(exportDataOptions, plate))
-        .toList();
-
-    return createPlateExportRecords(experiment, filteredPlates);
-  }
-
-  /**
-   * Checks if the plate should be filtered based on the given export data options.
-   *
-   * @param exportDataOptions The export data options.
-   * @param plate             The plate to be checked.
-   * @return True if the plate should be filtered, false otherwise.
-   */
   private boolean isPlateFilteredByOptions(ExportDataOptions exportDataOptions, PlateDTO plate) {
     return (Objects.isNull(exportDataOptions.validatedBy()) || plate.getValidatedBy().equals(exportDataOptions.validatedBy())) &&
         (Objects.isNull(exportDataOptions.validatedOnEnd()) || !plate.getValidatedOn().before(exportDataOptions.validatedOnEnd())) &&
@@ -91,27 +97,25 @@ public class ExportDataController {
         (exportDataOptions.includeDisapprovedPlates() || plate.getApprovalStatus().getCode() >= 0);
   }
 
-  /**
-   * Creates a list of PlateExportRecord objects based on the given ExperimentDTO and plates.
-   *
-   * @param experiment     The ExperimentDTO object representing the experiment.
-   * @param plates The List of PlateDTO objects to be mapped to PlateExportRecord objects.
-   * @return A List of PlateExportRecord objects.
-   */
-  private List<PlateDataRecord> createPlateExportRecords(ExperimentDTO experiment, List<PlateDTO> plates) {
+  private List<PlateDataRecord> createPlateExportRecords(ExperimentDTO experiment,
+      List<PlateDTO> plates, Map<Long, List<ResultFeatureStatDTO>> plateFeatureStats) {
     return plates.stream()
-        .map(plate -> createPlateExportRecord(experiment, plate))
+        .map(plate -> createPlateExportRecord(experiment, plate, plateFeatureStats.get(plate.getId())))
         .toList();
   }
 
-  /**
-   * Creates a PlateExportRecord object based on the given ExperimentDTO and PlateDTO.
-   *
-   * @param experiment The ExperimentDTO object representing the experiment.
-   * @param plate The PlateDTO object representing the plate.
-   * @return A PlateExportRecord object.
-   */
-  private PlateDataRecord createPlateExportRecord(ExperimentDTO experiment, PlateDTO plate) {
+  private PlateDataRecord createPlateExportRecord(ExperimentDTO experiment, PlateDTO plate, List<ResultFeatureStatDTO> featureStats) {
+    Map<Long, List<ResultFeatureStatDTO>> plateFeatureStats = featureStats.stream().collect(
+        Collectors.groupingBy(ResultFeatureStatDTO::getFeatureId));
+    List<FeatureStatsRecord> features = plateFeatureStats.entrySet().stream()
+        .map(entry -> FeatureStatsRecord.builder()
+            .featureId(entry.getKey())
+            .stats(entry.getValue().stream()
+                .map(this::createStatValueRecord)
+                .toList())
+            .build())
+        .toList();
+
     return PlateDataRecord.builder()
         .experimentId(experiment.getId())
         .experimentName(experiment.getName())
@@ -126,6 +130,14 @@ public class ExportDataController {
         .approvedOn(Optional.ofNullable(plate.getApprovedOn()).map(date -> new SimpleDateFormat("dd-MM-yyyy").format(date)).orElse(null))
         .approvedBy(plate.getApprovedBy())
         .comment(String.format("%s; %s", plate.getInvalidatedReason(), plate.getDisapprovedReason()))
+        .features(features)
+        .build();
+  }
+
+  private StatValueRecord createStatValueRecord(ResultFeatureStatDTO fstat) {
+    return StatValueRecord.builder()
+        .statName(fstat.getStatisticName())
+        .value(fstat.getValue())
         .build();
   }
 }
