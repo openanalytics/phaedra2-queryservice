@@ -23,6 +23,6 @@ package eu.openanalytics.phaedra.queryservice.record;
 import lombok.Builder;
 
 @Builder
-public record StatValueRecord(String statName, Float value) {
+public record StatValueRecord(String name, Float value) {
 
 }

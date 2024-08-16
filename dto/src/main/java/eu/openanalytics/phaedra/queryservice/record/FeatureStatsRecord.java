@@ -20,7 +20,7 @@
  */
 package eu.openanalytics.phaedra.queryservice.record;
 
-import java.util.List;
+import java.util.Map;
 import lombok.Builder;
 
 @Builder
@@ -29,6 +29,6 @@ public record FeatureStatsRecord(long resultSetId,
                                  String protocolName,
                                  long featureId,
                                  String featureName,
-                                 List<StatValueRecord> stats) {
+                                 Map<String, Float> stats) {
 
 }

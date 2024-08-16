@@ -70,7 +70,7 @@ public class ExportDataController {
       plateFeatureStats.put(plate.getId(), featureStats);
     }
 
-    return createPlateExportRecords(experiment, filteredPlates, plateFeatureStats);
+    return createPlateExportRecords(exportDataOptions, experiment, filteredPlates, plateFeatureStats);
   }
 
 //  @QueryMapping
@@ -97,23 +97,26 @@ public class ExportDataController {
         (exportDataOptions.includeDisapprovedPlates() || plate.getApprovalStatus().getCode() >= 0);
   }
 
-  private List<PlateDataRecord> createPlateExportRecords(ExperimentDTO experiment,
+  private List<PlateDataRecord> createPlateExportRecords(ExportDataOptions exportDataOptions, ExperimentDTO experiment,
       List<PlateDTO> plates, Map<Long, List<ResultFeatureStatDTO>> plateFeatureStats) {
     return plates.stream()
-        .map(plate -> createPlateExportRecord(experiment, plate, plateFeatureStats.get(plate.getId())))
+        .map(plate -> createPlateExportRecord(exportDataOptions, experiment, plate, plateFeatureStats.get(plate.getId())))
         .toList();
   }
 
-  private PlateDataRecord createPlateExportRecord(ExperimentDTO experiment, PlateDTO plate, List<ResultFeatureStatDTO> featureStats) {
+  private PlateDataRecord createPlateExportRecord(ExportDataOptions exportDataOptions, ExperimentDTO experiment, PlateDTO plate, List<ResultFeatureStatDTO> featureStats) {
     Map<Long, List<ResultFeatureStatDTO>> plateFeatureStats = featureStats.stream().collect(
         Collectors.groupingBy(ResultFeatureStatDTO::getFeatureId));
     List<FeatureStatsRecord> features = plateFeatureStats.entrySet().stream()
-        .map(entry -> FeatureStatsRecord.builder()
-            .featureId(entry.getKey())
-            .stats(entry.getValue().stream()
-                .map(this::createStatValueRecord)
-                .toList())
-            .build())
+        .map(entry -> {
+          var selectedFeature = exportDataOptions.selectedFeatures().stream().filter(featureInput -> featureInput.featureId() == entry.getKey()).findFirst().get();
+          return FeatureStatsRecord.builder()
+              .featureId(entry.getKey())
+              .featureName(selectedFeature.featureName())
+              .protocolName(selectedFeature.protocolName())
+              .stats(entry.getValue().stream().collect(Collectors.toMap(ResultFeatureStatDTO::getStatisticName, ResultFeatureStatDTO::getValue)))
+              .build();
+        })
         .toList();
 
     return PlateDataRecord.builder()
@@ -131,13 +134,6 @@ public class ExportDataController {
         .approvedBy(plate.getApprovedBy())
         .comment(String.format("%s; %s", plate.getInvalidatedReason(), plate.getDisapprovedReason()))
         .features(features)
-        .build();
-  }
-
-  private StatValueRecord createStatValueRecord(ResultFeatureStatDTO fstat) {
-    return StatValueRecord.builder()
-        .statName(fstat.getStatisticName())
-        .value(fstat.getValue())
         .build();
   }
 }
