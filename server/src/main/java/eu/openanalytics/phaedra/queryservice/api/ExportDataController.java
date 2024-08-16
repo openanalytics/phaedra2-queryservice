@@ -33,6 +33,7 @@ import eu.openanalytics.phaedra.resultdataservice.client.ResultDataServiceClient
 import eu.openanalytics.phaedra.resultdataservice.client.exception.ResultFeatureStatUnresolvableException;
 import eu.openanalytics.phaedra.resultdataservice.dto.ResultFeatureStatDTO;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -111,30 +112,6 @@ public class ExportDataController {
   }
 
   private PlateDataRecord createPlateExportRecord(ExportDataOptions exportDataOptions, ExperimentDTO experiment, PlateDTO plate, List<ResultFeatureStatDTO> featureStats) {
-    Map<Long, List<ResultFeatureStatDTO>> plateFeatureStats = featureStats.stream().collect(
-        Collectors.groupingBy(ResultFeatureStatDTO::getFeatureId));
-
-    logger.info("Selected features: " + exportDataOptions.selectedFeatures().size());
-    for (FeatureInput featureInput: exportDataOptions.selectedFeatures()) {
-      logger.info("Selected feature id: " + featureInput.featureId());
-      logger.info("Selected feature name: " + featureInput.featureName());
-    }
-    List<FeatureStatsRecord> features = plateFeatureStats.entrySet().stream()
-        .map(entry -> {
-          List<FeatureInput> featureInputs = exportDataOptions.selectedFeatures().stream().filter(featureInput -> entry.getKey().equals(featureInput.featureId())).toList();
-          if (CollectionUtils.isNotEmpty(featureInputs)) {
-            FeatureInput selectedFeature = featureInputs.get(0);
-            return FeatureStatsRecord.builder()
-                .featureId(entry.getKey())
-                .featureName(selectedFeature.featureName())
-                .protocolName(selectedFeature.protocolName())
-                .stats(entry.getValue().stream().map(this::createStatValueRecord).toList())
-                .build();
-          }
-          return null;
-        })
-        .toList();
-
     return PlateDataRecord.builder()
         .experimentId(experiment.getId())
         .experimentName(experiment.getName())
@@ -149,7 +126,7 @@ public class ExportDataController {
         .approvedOn(Optional.ofNullable(plate.getApprovedOn()).map(date -> new SimpleDateFormat("dd-MM-yyyy").format(date)).orElse(null))
         .approvedBy(plate.getApprovedBy())
         .comment(String.format("%s; %s", plate.getInvalidatedReason(), plate.getDisapprovedReason()))
-        .features(features)
+        .features(createFeatures(exportDataOptions, featureStats))
         .build();
   }
 
@@ -158,6 +135,30 @@ public class ExportDataController {
         .name(fstat.getStatisticName())
         .value(fstat.getValue())
         .build();
+  }
+
+  private Optional<FeatureStatsRecord> createFeatureStatsRecord(List<ResultFeatureStatDTO> featureStats, FeatureInput selectedFeature) {
+    List<ResultFeatureStatDTO> featureStatsFiltered = featureStats.stream()
+        .filter(fStat -> fStat.getFeatureId().equals(selectedFeature.featureId()))
+        .toList();
+    if (CollectionUtils.isNotEmpty(featureStatsFiltered)) {
+      return Optional.of(FeatureStatsRecord.builder()
+          .featureId(selectedFeature.featureId())
+          .featureName(selectedFeature.featureName())
+          .protocolName(selectedFeature.protocolName())
+          .stats(featureStatsFiltered.stream().map(this::createStatValueRecord).toList())
+          .build());
+    }
+    return Optional.empty();
+  }
+
+  private List<FeatureStatsRecord> createFeatures(ExportDataOptions exportDataOptions, List<ResultFeatureStatDTO> featureStats) {
+    List<FeatureStatsRecord> features = new ArrayList<>();
+    for (FeatureInput selectedFeature : exportDataOptions.selectedFeatures()) {
+      Optional<FeatureStatsRecord> featureStatsRecord = createFeatureStatsRecord(featureStats, selectedFeature);
+      featureStatsRecord.ifPresent(features::add);
+    }
+    return features;
   }
 }
 
