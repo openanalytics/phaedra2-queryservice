@@ -114,7 +114,7 @@ public class ExportDataController {
               .featureId(entry.getKey())
               .featureName(selectedFeature.featureName())
               .protocolName(selectedFeature.protocolName())
-              .stats(entry.getValue().stream().collect(Collectors.toMap(ResultFeatureStatDTO::getStatisticName, ResultFeatureStatDTO::getValue)))
+              .stats(entry.getValue().stream().map(this::createStatValueRecord).toList())
               .build();
         })
         .toList();
@@ -134,6 +134,13 @@ public class ExportDataController {
         .approvedBy(plate.getApprovedBy())
         .comment(String.format("%s; %s", plate.getInvalidatedReason(), plate.getDisapprovedReason()))
         .features(features)
+        .build();
+  }
+
+  private StatValueRecord createStatValueRecord(ResultFeatureStatDTO fstat) {
+    return StatValueRecord.builder()
+        .name(fstat.getStatisticName())
+        .value(fstat.getValue())
         .build();
   }
 }
