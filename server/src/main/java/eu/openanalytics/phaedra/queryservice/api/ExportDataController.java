@@ -72,12 +72,20 @@ public class ExportDataController {
         .toList();
 
     Map<Long, List<ResultFeatureStatDTO>> plateFeatureStats = new HashMap<>();
+    Map<Long, List<ResultFeatureStatDTO>> wellTypeFeatureStats = new HashMap<>();
     for (PlateDTO plate : filteredPlates) {
       List<ResultFeatureStatDTO> featureStats = resultDataServiceClient.getLatestResultFeatureStatsForPlateId(plate.getId());
-      plateFeatureStats.put(plate.getId(), featureStats);
+      if (exportDataOptions.includeFeatureStats()) {
+        plateFeatureStats.put(plate.getId(), featureStats.stream().filter(fStats -> Objects.isNull(fStats.getWelltype())).toList());
+      }
+
+      if (exportDataOptions.includeWellTypeFeatureStats()) {
+        wellTypeFeatureStats.put(plate.getId(),  featureStats.stream().filter(fStats -> !Objects.isNull(fStats.getWelltype())).toList());
+      }
     }
 
-    return createPlateExportRecords(exportDataOptions, experiment, filteredPlates, plateFeatureStats);
+    return createPlateExportRecords(exportDataOptions, experiment, filteredPlates,
+        plateFeatureStats, wellTypeFeatureStats);
   }
 
 //  @QueryMapping
@@ -105,13 +113,17 @@ public class ExportDataController {
   }
 
   private List<PlateDataRecord> createPlateExportRecords(ExportDataOptions exportDataOptions, ExperimentDTO experiment,
-      List<PlateDTO> plates, Map<Long, List<ResultFeatureStatDTO>> plateFeatureStats) {
+      List<PlateDTO> plates, Map<Long, List<ResultFeatureStatDTO>> plateFeatureStats,
+      Map<Long, List<ResultFeatureStatDTO>> wellTypeFeatureStats) {
     return plates.stream()
-        .map(plate -> createPlateExportRecord(exportDataOptions, experiment, plate, plateFeatureStats.get(plate.getId())))
+        .map(plate -> createPlateExportRecord(exportDataOptions, experiment, plate,
+            plateFeatureStats.get(plate.getId()), wellTypeFeatureStats.get(plate.getId())))
         .toList();
   }
 
-  private PlateDataRecord createPlateExportRecord(ExportDataOptions exportDataOptions, ExperimentDTO experiment, PlateDTO plate, List<ResultFeatureStatDTO> featureStats) {
+  private PlateDataRecord createPlateExportRecord(ExportDataOptions exportDataOptions,
+      ExperimentDTO experiment, PlateDTO plate, List<ResultFeatureStatDTO> plateFeatureStats,
+      List<ResultFeatureStatDTO> wellTypeFeatureStats) {
     return PlateDataRecord.builder()
         .experimentId(experiment.getId())
         .experimentName(experiment.getName())
@@ -119,14 +131,18 @@ public class ExportDataController {
         .barcode(plate.getBarcode())
         .plateTemplateId(plate.getLinkTemplateId())
         .plateTemplateName(plate.getLinkTemplateName())
-        .validationStatus(Optional.ofNullable(plate.getValidationStatus()).map(Enum::name).orElse(null))
-        .validatedOn(Optional.ofNullable(plate.getValidatedOn()).map(date -> new SimpleDateFormat("dd-MM-yyyy").format(date)).orElse(null))
+        .validationStatus(Optional.ofNullable(plate.getValidationStatus())
+            .map(Enum::name).orElse(null))
+        .validatedOn(Optional.ofNullable(plate.getValidatedOn())
+            .map(date -> new SimpleDateFormat("dd-MM-yyyy").format(date)).orElse(null))
         .validatedBy(plate.getApprovedBy())
-        .approvalStatus(Optional.ofNullable(plate.getApprovalStatus()).map(Enum::name).orElse(null))
-        .approvedOn(Optional.ofNullable(plate.getApprovedOn()).map(date -> new SimpleDateFormat("dd-MM-yyyy").format(date)).orElse(null))
+        .approvalStatus(Optional.ofNullable(plate.getApprovalStatus())
+            .map(Enum::name).orElse(null))
+        .approvedOn(Optional.ofNullable(plate.getApprovedOn())
+            .map(date -> new SimpleDateFormat("dd-MM-yyyy").format(date)).orElse(null))
         .approvedBy(plate.getApprovedBy())
         .comment(String.format("%s; %s", plate.getInvalidatedReason(), plate.getDisapprovedReason()))
-        .features(createFeatures(exportDataOptions, featureStats))
+        .features(createFeatures(exportDataOptions, plateFeatureStats, wellTypeFeatureStats))
         .build();
   }
 
@@ -152,10 +168,12 @@ public class ExportDataController {
     return Optional.empty();
   }
 
-  private List<FeatureStatsRecord> createFeatures(ExportDataOptions exportDataOptions, List<ResultFeatureStatDTO> featureStats) {
+  private List<FeatureStatsRecord> createFeatures(ExportDataOptions exportDataOptions,
+      List<ResultFeatureStatDTO> plateFeatureStats,
+      List<ResultFeatureStatDTO> wellTypeFeatureStats) {
     List<FeatureStatsRecord> features = new ArrayList<>();
     for (FeatureInput selectedFeature : exportDataOptions.selectedFeatures()) {
-      Optional<FeatureStatsRecord> featureStatsRecord = createFeatureStatsRecord(featureStats, selectedFeature);
+      Optional<FeatureStatsRecord> featureStatsRecord = createFeatureStatsRecord(plateFeatureStats, selectedFeature);
       featureStatsRecord.ifPresent(features::add);
     }
     return features;
