@@ -184,6 +184,7 @@ public class ExportDataController {
 
     if (MapUtils.isNotEmpty(featureStatsFiltered)) {
       for (String wellType : featureStatsFiltered.keySet()) {
+        logger.info(String.format("Nr of stats for well type '%s': %d", wellType, featureStatsFiltered.get(wellType).size()));
         return Optional.of(FeatureStatsRecord.builder()
             .featureId(selectedFeature.featureId())
             .featureName(selectedFeature.featureName())
