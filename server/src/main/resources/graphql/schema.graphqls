@@ -23,6 +23,21 @@ input ExportDataOptions {
     includeWellTypeFeatureStats: Boolean
 }
 
+type StatValueRecord {
+    name: String,
+    value: FloatNaN
+}
+
+type FeatureStatsRecord {
+    resultSetId: Int,
+    protocolId: Int,
+    protocolName: String,
+    featureId: Int,
+    featureName: String,
+    wellType: String,
+    stats: [StatValueRecord]
+}
+
 type PlateDataRecord {
     experimentId: ID,
     experimentName: String
@@ -42,14 +57,6 @@ type PlateDataRecord {
     features: [FeatureStatsRecord]
 }
 
-type FeatureStatsRecord {
-    resultSetId: Int,
-    protocolId: Int,
-    protocolName: String,
-    featureId: Int,
-    featureName: String,
-    stats: [StatValueRecord]
-}
 
 type FeatureValueRecord {
     featureId: Int,
@@ -77,11 +84,6 @@ type WellDataRecord {
     concentration: FloatNaN,
     isValid: Boolean,
     features: [FeatureValueRecord],
-}
-
-type StatValueRecord {
-    name: String,
-    value: FloatNaN
 }
 
 type Query {
