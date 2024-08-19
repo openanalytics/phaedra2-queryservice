@@ -75,12 +75,18 @@ public class ExportDataController {
     Map<Long, List<ResultFeatureStatDTO>> wellTypeFeatureStats = new HashMap<>();
     for (PlateDTO plate : filteredPlates) {
       List<ResultFeatureStatDTO> featureStats = resultDataServiceClient.getLatestResultFeatureStatsForPlateId(plate.getId());
-      if (exportDataOptions.includeFeatureStats()) {
-        plateFeatureStats.put(plate.getId(), featureStats.stream().filter(fStats -> Objects.isNull(fStats.getWelltype())).toList());
-      }
+      if (CollectionUtils.isNotEmpty(featureStats)) {
+        if (exportDataOptions.includeFeatureStats()) {
+          plateFeatureStats.put(plate.getId(),
+              featureStats.stream().filter(fStats -> Objects.isNull(fStats.getWelltype()))
+                  .toList());
+        }
 
-      if (exportDataOptions.includeWellTypeFeatureStats()) {
-        wellTypeFeatureStats.put(plate.getId(),  featureStats.stream().filter(fStats -> !Objects.isNull(fStats.getWelltype())).toList());
+        if (exportDataOptions.includeWellTypeFeatureStats()) {
+          wellTypeFeatureStats.put(plate.getId(),
+              featureStats.stream().filter(fStats -> !Objects.isNull(fStats.getWelltype()))
+                  .toList());
+        }
       }
     }
 
