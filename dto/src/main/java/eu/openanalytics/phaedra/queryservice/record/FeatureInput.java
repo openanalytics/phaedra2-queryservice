@@ -20,6 +20,6 @@
  */
 package eu.openanalytics.phaedra.queryservice.record;
 
-public record FeatureInput(long featureId, String featureName, String protocolName) {
+public record FeatureInput(long featureId, String featureName, long protocolId, String protocolName) {
 
 }

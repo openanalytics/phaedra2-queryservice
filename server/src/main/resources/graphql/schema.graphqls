@@ -4,6 +4,7 @@ scalar FloatNaN
 input FeatureInput {
     featureId: ID,
     featureName: String,
+    protocolId: ID,
     protocolName: String
 }
 

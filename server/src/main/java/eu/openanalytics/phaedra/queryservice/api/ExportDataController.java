@@ -162,32 +162,17 @@ public class ExportDataController {
         .build();
   }
 
-  private Optional<FeatureStatsRecord> createFeatureStatsRecord(List<ResultFeatureStatDTO> featureStats, FeatureInput selectedFeature) {
-    List<ResultFeatureStatDTO> featureStatsFiltered = featureStats.stream()
-        .filter(fStat -> fStat.getFeatureId().equals(selectedFeature.featureId()))
-        .toList();
-    if (CollectionUtils.isNotEmpty(featureStatsFiltered)) {
-      return Optional.of(FeatureStatsRecord.builder()
-          .featureId(selectedFeature.featureId())
-          .featureName(selectedFeature.featureName())
-          .protocolName(selectedFeature.protocolName())
-          .stats(featureStatsFiltered.stream().map(this::createStatValueRecord).toList())
-          .build());
-    }
-    return Optional.empty();
-  }
-
-  private Optional<FeatureStatsRecord> createWellTypeFeatureStatsRecord(String wellType,
-      List<ResultFeatureStatDTO> featureStats, FeatureInput selectedFeature) {
+  private Optional<FeatureStatsRecord> createFeatureStatsRecord(
+      List<ResultFeatureStatDTO> featureStats, FeatureInput selectedFeature,
+      Optional<String> wellType) {
     if (CollectionUtils.isNotEmpty(featureStats)) {
-      logger.info(
-          String.format("Nr of stats for well type '%s': %d", wellType, featureStats.size()));
       return Optional.of(FeatureStatsRecord.builder()
           .featureId(selectedFeature.featureId())
           .featureName(selectedFeature.featureName())
+          .protocolId(selectedFeature.protocolId())
           .protocolName(selectedFeature.protocolName())
-          .resultSetId(featureStats.get(0).getResultSetId())
-          .wellType(wellType)
+          .resultSetId(featureStats.getFirst().getResultSetId())
+          .wellType(wellType.orElse(null))
           .stats(featureStats.stream().map(this::createStatValueRecord).toList())
           .build());
     }
@@ -201,8 +186,12 @@ public class ExportDataController {
 
     if (CollectionUtils.isNotEmpty(plateFeatureStats)) {
       for (FeatureInput selectedFeature : exportDataOptions.selectedFeatures()) {
+        List<ResultFeatureStatDTO> featureStatsFiltered = plateFeatureStats.stream()
+            .filter(fStat -> fStat.getFeatureId().equals(selectedFeature.featureId()))
+            .toList();
+
         Optional<FeatureStatsRecord> featureStatsRecord = createFeatureStatsRecord(
-            plateFeatureStats, selectedFeature);
+            featureStatsFiltered, selectedFeature, Optional.empty());
         featureStatsRecord.ifPresent(features::add);
       }
     }
@@ -215,8 +204,8 @@ public class ExportDataController {
 
         if (MapUtils.isNotEmpty(featureStatsFiltered)) {
           for (String wellType : featureStatsFiltered.keySet()) {
-            Optional<FeatureStatsRecord> featureStatsRecord = createWellTypeFeatureStatsRecord(
-                wellType, featureStatsFiltered.get(wellType), selectedFeature);
+            Optional<FeatureStatsRecord> featureStatsRecord = createFeatureStatsRecord(
+                featureStatsFiltered.get(wellType), selectedFeature, Optional.of(wellType));
             featureStatsRecord.ifPresent(features::add);
           }
         }
