@@ -29,6 +29,7 @@ public record FeatureStatsRecord(long resultSetId,
                                  String protocolName,
                                  long featureId,
                                  String featureName,
+                                 String wellType,
                                  List<StatValueRecord> stats) {
 
 }

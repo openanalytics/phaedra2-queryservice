@@ -41,6 +41,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -174,14 +175,47 @@ public class ExportDataController {
     return Optional.empty();
   }
 
+  private Optional<FeatureStatsRecord> createWellTypeFeatureStatsRecord(List<ResultFeatureStatDTO> featureStats, FeatureInput selectedFeature) {
+    Map<String, List<ResultFeatureStatDTO>> featureStatsFiltered = featureStats.stream()
+        .filter(fStat -> fStat.getFeatureId().equals(selectedFeature.featureId()))
+        .collect(Collectors.groupingBy(ResultFeatureStatDTO::getWelltype));
+
+    if (MapUtils.isNotEmpty(featureStatsFiltered)) {
+      for (String wellType : featureStatsFiltered.keySet()) {
+        return Optional.of(FeatureStatsRecord.builder()
+            .featureId(selectedFeature.featureId())
+            .featureName(selectedFeature.featureName())
+            .protocolName(selectedFeature.protocolName())
+            .wellType(wellType)
+            .stats(featureStatsFiltered.get(wellType).stream().map(this::createStatValueRecord)
+                .toList())
+            .build());
+      }
+    }
+    return Optional.empty();
+  }
+
   private List<FeatureStatsRecord> createFeatures(ExportDataOptions exportDataOptions,
       List<ResultFeatureStatDTO> plateFeatureStats,
       List<ResultFeatureStatDTO> wellTypeFeatureStats) {
     List<FeatureStatsRecord> features = new ArrayList<>();
-    for (FeatureInput selectedFeature : exportDataOptions.selectedFeatures()) {
-      Optional<FeatureStatsRecord> featureStatsRecord = createFeatureStatsRecord(plateFeatureStats, selectedFeature);
-      featureStatsRecord.ifPresent(features::add);
+
+    if (CollectionUtils.isNotEmpty(plateFeatureStats)) {
+      for (FeatureInput selectedFeature : exportDataOptions.selectedFeatures()) {
+        Optional<FeatureStatsRecord> featureStatsRecord = createFeatureStatsRecord(
+            plateFeatureStats, selectedFeature);
+        featureStatsRecord.ifPresent(features::add);
+      }
     }
+
+    if (CollectionUtils.isNotEmpty(wellTypeFeatureStats)) {
+      for (FeatureInput selectedFeature : exportDataOptions.selectedFeatures()) {
+        Optional<FeatureStatsRecord> featureStatsRecord = createWellTypeFeatureStatsRecord(
+            wellTypeFeatureStats, selectedFeature);
+        featureStatsRecord.ifPresent(features::add);
+      }
+    }
+
     return features;
   }
 }
