@@ -178,10 +178,12 @@ public class ExportDataController {
   }
 
   private Optional<FeatureStatsRecord> createWellTypeFeatureStatsRecord(List<ResultFeatureStatDTO> featureStats, FeatureInput selectedFeature) {
+    logger.info(String.format("Number of well type feature stats: %d", featureStats.size())) ;
     Map<String, List<ResultFeatureStatDTO>> featureStatsFiltered = featureStats.stream()
         .filter(fStat -> fStat.getFeatureId().equals(selectedFeature.featureId()))
         .collect(Collectors.groupingBy(ResultFeatureStatDTO::getWelltype));
 
+    logger.info(String.format("Number of well types found: %d", featureStatsFiltered.keySet().size())) ;
     if (MapUtils.isNotEmpty(featureStatsFiltered)) {
       for (String wellType : featureStatsFiltered.keySet()) {
         logger.info(String.format("Nr of stats for well type '%s': %d", wellType, featureStatsFiltered.get(wellType).size()));
