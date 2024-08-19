@@ -188,7 +188,7 @@ public class ExportDataController {
             .featureId(selectedFeature.featureId())
             .featureName(selectedFeature.featureName())
             .protocolName(selectedFeature.protocolName())
-                .resultSetId(featureStatsFiltered.get(wellType).)
+            .resultSetId(featureStatsFiltered.get(wellType).get(0).getResultSetId())
             .wellType(wellType)
             .stats(featureStatsFiltered.get(wellType).stream().map(this::createStatValueRecord)
                 .toList())
