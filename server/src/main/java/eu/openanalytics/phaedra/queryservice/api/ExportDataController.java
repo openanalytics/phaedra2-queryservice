@@ -76,17 +76,19 @@ public class ExportDataController {
     Map<Long, List<ResultFeatureStatDTO>> wellTypeFeatureStats = new HashMap<>();
     for (PlateDTO plate : filteredPlates) {
       List<ResultFeatureStatDTO> featureStats = resultDataServiceClient.getLatestResultFeatureStatsForPlateId(plate.getId());
+      logger.info(String.format("Number of feature stats for plate %d: %d", plate.getId(), featureStats.size())) ;
+
       if (CollectionUtils.isNotEmpty(featureStats)) {
         if (exportDataOptions.includeFeatureStats()) {
-          plateFeatureStats.put(plate.getId(),
-              featureStats.stream().filter(fStats -> Objects.isNull(fStats.getWelltype()))
-                  .toList());
+          List<ResultFeatureStatDTO> result = featureStats.stream().filter(fStats -> Objects.isNull(fStats.getWelltype())).toList();
+          logger.info(String.format("Number of plate feature stats for plate %d: %d", plate.getId(), result.size())) ;
+          plateFeatureStats.put(plate.getId(), result);
         }
 
         if (exportDataOptions.includeWellTypeFeatureStats()) {
-          wellTypeFeatureStats.put(plate.getId(),
-              featureStats.stream().filter(fStats -> !Objects.isNull(fStats.getWelltype()))
-                  .toList());
+          List<ResultFeatureStatDTO> result = featureStats.stream().filter(fStats -> !Objects.isNull(fStats.getWelltype())).toList();
+          logger.info(String.format("Number of well type feature stats for plate %d: %d", plate.getId(), result.size())) ;
+          wellTypeFeatureStats.put(plate.getId(), result);
         }
       }
     }
@@ -186,6 +188,7 @@ public class ExportDataController {
             .featureId(selectedFeature.featureId())
             .featureName(selectedFeature.featureName())
             .protocolName(selectedFeature.protocolName())
+                .resultSetId(featureStatsFiltered.get(wellType).)
             .wellType(wellType)
             .stats(featureStatsFiltered.get(wellType).stream().map(this::createStatValueRecord)
                 .toList())
