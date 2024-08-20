@@ -51,8 +51,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
@@ -143,7 +141,7 @@ public class ExportDataController {
 
         result.addAll(plateWells.stream()
             .map(well -> createWellDataRecord(well, wellFeatureData, experiment, plate))
-            .collect(Collectors.toList()));
+            .toList());
       }
     } catch (UnresolvableObjectException | ResultSetUnresolvableException e) {
       throw new RuntimeException(e);
@@ -174,16 +172,15 @@ public class ExportDataController {
       ResultSetDTO latestPlateResultSet) {
     List<ResultDataDTO> list = new ArrayList<>();
     for (FeatureInput selectedFeature : exportDataOptions.selectedFeatures()) {
-      ResultDataDTO resultData = null;
       try {
-        resultData = resultDataServiceClient.getResultData(latestPlateResultSet.getId(),
+        ResultDataDTO resultData = resultDataServiceClient.getResultData(latestPlateResultSet.getId(),
             selectedFeature.featureId());
 
         if (!Objects.isNull(resultData)) {
           list.add(resultData);
         }
       } catch (ResultDataUnresolvableException e) {
-
+        //TODO: Catch error correctly
       }
     }
     return list;
