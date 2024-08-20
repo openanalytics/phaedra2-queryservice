@@ -24,11 +24,15 @@ import eu.openanalytics.phaedra.plateservice.client.PlateServiceClient;
 import eu.openanalytics.phaedra.plateservice.client.exception.UnresolvableObjectException;
 import eu.openanalytics.phaedra.plateservice.dto.ExperimentDTO;
 import eu.openanalytics.phaedra.plateservice.dto.PlateDTO;
+import eu.openanalytics.phaedra.plateservice.dto.WellDTO;
+import eu.openanalytics.phaedra.plateservice.dto.WellSubstanceDTO;
+import eu.openanalytics.phaedra.queryservice.model.Well;
 import eu.openanalytics.phaedra.queryservice.record.ExportDataOptions;
 import eu.openanalytics.phaedra.queryservice.record.FeatureInput;
 import eu.openanalytics.phaedra.queryservice.record.FeatureStatsRecord;
 import eu.openanalytics.phaedra.queryservice.record.PlateDataRecord;
 import eu.openanalytics.phaedra.queryservice.record.StatValueRecord;
+import eu.openanalytics.phaedra.queryservice.record.WellDataRecord;
 import eu.openanalytics.phaedra.resultdataservice.client.ResultDataServiceClient;
 import eu.openanalytics.phaedra.resultdataservice.client.exception.ResultFeatureStatUnresolvableException;
 import eu.openanalytics.phaedra.resultdataservice.dto.ResultFeatureStatDTO;
@@ -93,22 +97,24 @@ public class ExportDataController {
       }
     }
 
-    return createPlateExportRecords(exportDataOptions, experiment, filteredPlates,
+    return createPlateDataExportRecords(exportDataOptions, experiment, filteredPlates,
         plateFeatureStats, wellTypeFeatureStats);
   }
 
-//  @QueryMapping
-//  public List<PlateDataRecord> exportWellData(@Argument ExportDataOptions exportDataOptions)
-//      throws UnresolvableObjectException {
-//    ExperimentDTO experiment = plateServiceClient.getExperiment(exportDataOptions.experimentId());
-//    List<PlateDTO> plates = plateServiceClient.getPlatesByExperiment(exportDataOptions.experimentId());
-//
-//    List<PlateDTO> filteredPlates = plates.stream()
-//        .filter(plate -> isPlateFilteredByOptions(exportDataOptions, plate))
-//        .toList();
-//
-//    return createPlateExportRecords(experiment, filteredPlates);
-//  }
+  @QueryMapping
+  public List<WellDataRecord> exportWellData(@Argument ExportDataOptions exportDataOptions)
+      throws UnresolvableObjectException {
+    ExperimentDTO experiment = plateServiceClient.getExperiment(exportDataOptions.experimentId());
+    List<PlateDTO> plates = plateServiceClient.getPlatesByExperiment(exportDataOptions.experimentId());
+
+    List<PlateDTO> filteredPlates = plates.stream()
+        .filter(plate -> isPlateFilteredByOptions(exportDataOptions, plate))
+        .toList();
+
+    List<WellDataRecord> wellDataRecords = new ArrayList<>();
+    filteredPlates.stream().forEach(plate -> wellDataRecords.addAll(createWellDataExportRecords(exportDataOptions, experiment, plate)));
+    return wellDataRecords;
+  }
 
   private boolean isPlateFilteredByOptions(ExportDataOptions exportDataOptions, PlateDTO plate) {
     return (Objects.isNull(exportDataOptions.validatedBy()) || plate.getValidatedBy().equals(exportDataOptions.validatedBy())) &&
@@ -121,13 +127,46 @@ public class ExportDataController {
         (exportDataOptions.includeDisapprovedPlates() || plate.getApprovalStatus().getCode() >= 0);
   }
 
-  private List<PlateDataRecord> createPlateExportRecords(ExportDataOptions exportDataOptions, ExperimentDTO experiment,
+  private List<PlateDataRecord> createPlateDataExportRecords(ExportDataOptions exportDataOptions, ExperimentDTO experiment,
       List<PlateDTO> plates, Map<Long, List<ResultFeatureStatDTO>> plateFeatureStats,
       Map<Long, List<ResultFeatureStatDTO>> wellTypeFeatureStats) {
     return plates.stream()
         .map(plate -> createPlateExportRecord(exportDataOptions, experiment, plate,
             plateFeatureStats.get(plate.getId()), wellTypeFeatureStats.get(plate.getId())))
         .toList();
+  }
+
+  private List<WellDataRecord> createWellDataExportRecords(ExportDataOptions exportDataOptions,
+      ExperimentDTO experiment, PlateDTO plate) {
+    try {
+      List<WellDTO> plateWells = plateServiceClient.getWells(plate.getId());
+      return plateWells.stream().map(well -> WellDataRecord.builder()
+              .experimentId(experiment.getId())
+              .experimentName(experiment.getName())
+              .plateId(plate.getId())
+              .barcode(plate.getBarcode())
+              .validationStatus(Optional.ofNullable(plate.getValidationStatus())
+                  .map(Enum::name).orElse(null))
+              .validatedOn(Optional.ofNullable(plate.getValidatedOn())
+                  .map(date -> new SimpleDateFormat("dd-MM-yyyy").format(date)).orElse(null))
+              .validatedBy(plate.getApprovedBy())
+              .approvalStatus(Optional.ofNullable(plate.getApprovalStatus())
+                  .map(Enum::name).orElse(null))
+              .approvedOn(Optional.ofNullable(plate.getApprovedOn())
+                  .map(date -> new SimpleDateFormat("dd-MM-yyyy").format(date)).orElse(null))
+              .approvedBy(plate.getApprovedBy())
+              .wellId(well.getId())
+              .rowNr(well.getRow())
+              .columnNr(well.getColumn())
+              .wellType(well.getWellType())
+              .substanceType(Optional.ofNullable(well.getWellSubstance()).map(WellSubstanceDTO::getType).orElse(null))
+              .substanceName(Optional.ofNullable(well.getWellSubstance()).map(WellSubstanceDTO::getName).orElse(null))
+              .concentration(Optional.ofNullable(well.getWellSubstance()).map(WellSubstanceDTO::getConcentration).orElse(null))
+              .build())
+          .toList();
+    } catch (UnresolvableObjectException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private PlateDataRecord createPlateExportRecord(ExportDataOptions exportDataOptions,

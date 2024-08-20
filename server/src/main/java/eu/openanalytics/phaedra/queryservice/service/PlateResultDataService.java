@@ -20,20 +20,41 @@
  */
 package eu.openanalytics.phaedra.queryservice.service;
 
-import eu.openanalytics.phaedra.queryservice.model.PlateResultData;
+import eu.openanalytics.phaedra.plateservice.dto.PlateDTO;
+import eu.openanalytics.phaedra.resultdataservice.dto.ResultSetDTO;
+import java.util.List;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import reactor.core.publisher.Mono;
 
 @Service
 public class PlateResultDataService {
 
-    private final RestTemplate restTemplate;
+//  private final HttpGraphQlClient graphQlClient;
 
-    public PlateResultDataService() {
-        this.restTemplate = new RestTemplate();
-    }
+  public PlateResultDataService() {
+//    WebClient client = WebClient.builder()
+//        .baseUrl("https://phaedra.poc.openanalytics.io/phaedra/resultdata-service/graphql")
+//        .build();
+//    graphQlClient = HttpGraphQlClient.builder(client).build();
+  }
 
-    public PlateResultData  getPlateResultData(Long plateId) {
-        return null;
-    }
+  public Mono<List<ResultSetDTO>> getPlateResultSet(List<PlateDTO> plates) {
+    // language=GraphQL
+//    String document = """
+//            query latestResultSetsByPlateIds($plateIds: [ID]) {
+//                resultSets:latestResultSetsByPlateIds(plateIds: $plateIds) {
+//                    id
+//                    plateId
+//                    protocolId
+//                    measId
+//                    outcome
+//                }
+//            }
+//            """;
+//    return graphQlClient.document(document)
+//        .variable("plateIds", plates.stream().map(PlateDTO::getId).toArray())
+//        .retrieve("resultSets")
+//        .toEntityList(ResultSetDTO.class);
+    return null;
+  }
 }
