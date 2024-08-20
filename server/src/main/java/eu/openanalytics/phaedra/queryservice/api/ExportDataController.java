@@ -1,20 +1,22 @@
 /**
  * Phaedra II
- * <p>
+ *
  * Copyright (C) 2016-2024 Open Analytics
- * <p>
+ *
  * ===========================================================================
- * <p>
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * Apache License as published by The Apache Software Foundation, either version 2 of the License,
- * or (at your option) any later version.
- * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
- * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the Apache
- * License for more details.
- * <p>
- * You should have received a copy of the Apache License along with this program.  If not, see
- * <http://www.apache.org/licenses/>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the Apache License as published by
+ * The Apache Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * Apache License for more details.
+ *
+ * You should have received a copy of the Apache License
+ * along with this program.  If not, see <http://www.apache.org/licenses/>
  */
 package eu.openanalytics.phaedra.queryservice.api;
 
@@ -130,21 +132,23 @@ public class ExportDataController {
 
   private List<WellDataRecord> createWellDataExportRecords(ExportDataOptions exportDataOptions,
       ExperimentDTO experiment, PlateDTO plate) {
-
+    List<WellDataRecord> result = new ArrayList<>();
     try {
       ResultSetDTO latestPlateResultSet = resultDataServiceClient.getLatestResultSetByPlateId(
           plate.getId());
-      List<ResultDataDTO> wellFeatureData = fetchWellFeatureData(exportDataOptions,
-          latestPlateResultSet);
-      List<WellDTO> plateWells = plateServiceClient.getWells(plate.getId());
+      if (latestPlateResultSet != null) {
+        List<ResultDataDTO> wellFeatureData = fetchWellFeatureData(exportDataOptions,
+            latestPlateResultSet);
+        List<WellDTO> plateWells = plateServiceClient.getWells(plate.getId());
 
-      return plateWells.stream()
-          .map(well -> createWellDataRecord(well, wellFeatureData, experiment, plate))
-          .collect(Collectors.toList());
-    } catch (UnresolvableObjectException | ResultSetUnresolvableException |
-             ResultDataUnresolvableException e) {
+        result.addAll(plateWells.stream()
+            .map(well -> createWellDataRecord(well, wellFeatureData, experiment, plate))
+            .collect(Collectors.toList()));
+      }
+    } catch (UnresolvableObjectException | ResultSetUnresolvableException e) {
       throw new RuntimeException(e);
     }
+    return result;
   }
 
   private void fetchPlateFeatureStats(ExportDataOptions exportDataOptions, PlateDTO plate,
@@ -167,14 +171,19 @@ public class ExportDataController {
   }
 
   private List<ResultDataDTO> fetchWellFeatureData(ExportDataOptions exportDataOptions,
-      ResultSetDTO latestPlateResultSet)
-      throws ResultDataUnresolvableException {
+      ResultSetDTO latestPlateResultSet) {
     List<ResultDataDTO> list = new ArrayList<>();
     for (FeatureInput selectedFeature : exportDataOptions.selectedFeatures()) {
-      ResultDataDTO resultData = resultDataServiceClient.getResultData(latestPlateResultSet.getId(),
-          selectedFeature.featureId());
-      if (!Objects.isNull(resultData)) {
-        list.add(resultData);
+      ResultDataDTO resultData = null;
+      try {
+        resultData = resultDataServiceClient.getResultData(latestPlateResultSet.getId(),
+            selectedFeature.featureId());
+
+        if (!Objects.isNull(resultData)) {
+          list.add(resultData);
+        }
+      } catch (ResultDataUnresolvableException e) {
+
       }
     }
     return list;
