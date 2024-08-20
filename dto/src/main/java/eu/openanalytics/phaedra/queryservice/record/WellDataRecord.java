@@ -35,12 +35,14 @@ public record WellDataRecord(long experimentId,
                              String approvedBy,
                              String approvedOn,
                              long wellId,
+                             long wellNr,
                              long rowNr,
                              long columnNr,
                              String wellType,
                              String substanceName,
                              String substanceType,
                              Double concentration,
-                             List<WellFeatureValueRecord> featureValues) {
+                             Boolean isValid,
+                             List<WellFeatureValueRecord> features) {
 
 }

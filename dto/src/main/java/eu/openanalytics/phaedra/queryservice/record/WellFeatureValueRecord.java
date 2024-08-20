@@ -20,6 +20,9 @@
  */
 package eu.openanalytics.phaedra.queryservice.record;
 
+import lombok.Builder;
+
+@Builder
 public record WellFeatureValueRecord(long resultSetId,
                                      long protocolId,
                                      String protocolName,

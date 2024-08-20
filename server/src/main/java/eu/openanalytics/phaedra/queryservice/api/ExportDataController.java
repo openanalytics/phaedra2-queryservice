@@ -1,22 +1,20 @@
 /**
  * Phaedra II
- *
+ * <p>
  * Copyright (C) 2016-2024 Open Analytics
- *
+ * <p>
  * ===========================================================================
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the Apache License as published by
- * The Apache Software Foundation, either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * Apache License for more details.
- *
- * You should have received a copy of the Apache License
- * along with this program.  If not, see <http://www.apache.org/licenses/>
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * Apache License as published by The Apache Software Foundation, either version 2 of the License,
+ * or (at your option) any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the Apache
+ * License for more details.
+ * <p>
+ * You should have received a copy of the Apache License along with this program.  If not, see
+ * <http://www.apache.org/licenses/>
  */
 package eu.openanalytics.phaedra.queryservice.api;
 
@@ -26,18 +24,23 @@ import eu.openanalytics.phaedra.plateservice.dto.ExperimentDTO;
 import eu.openanalytics.phaedra.plateservice.dto.PlateDTO;
 import eu.openanalytics.phaedra.plateservice.dto.WellDTO;
 import eu.openanalytics.phaedra.plateservice.dto.WellSubstanceDTO;
-import eu.openanalytics.phaedra.queryservice.model.Well;
 import eu.openanalytics.phaedra.queryservice.record.ExportDataOptions;
 import eu.openanalytics.phaedra.queryservice.record.FeatureInput;
 import eu.openanalytics.phaedra.queryservice.record.FeatureStatsRecord;
 import eu.openanalytics.phaedra.queryservice.record.PlateDataRecord;
 import eu.openanalytics.phaedra.queryservice.record.StatValueRecord;
 import eu.openanalytics.phaedra.queryservice.record.WellDataRecord;
+import eu.openanalytics.phaedra.queryservice.record.WellFeatureValueRecord;
 import eu.openanalytics.phaedra.resultdataservice.client.ResultDataServiceClient;
+import eu.openanalytics.phaedra.resultdataservice.client.exception.ResultDataUnresolvableException;
 import eu.openanalytics.phaedra.resultdataservice.client.exception.ResultFeatureStatUnresolvableException;
+import eu.openanalytics.phaedra.resultdataservice.client.exception.ResultSetUnresolvableException;
+import eu.openanalytics.phaedra.resultdataservice.dto.ResultDataDTO;
 import eu.openanalytics.phaedra.resultdataservice.dto.ResultFeatureStatDTO;
+import eu.openanalytics.phaedra.resultdataservice.dto.ResultSetDTO;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,11 +57,12 @@ import org.springframework.stereotype.Controller;
 
 @Controller
 public class ExportDataController {
+  private static final int VALID_STATUS_CODE = 0;
 
   private final PlateServiceClient plateServiceClient;
   private final ResultDataServiceClient resultDataServiceClient;
 
-  private final Logger logger = LoggerFactory.getLogger(getClass());
+//  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   public ExportDataController(PlateServiceClient plateServiceClient,
       ResultDataServiceClient resultDataServiceClient) {
@@ -70,33 +74,16 @@ public class ExportDataController {
   public List<PlateDataRecord> exportPlateListData(@Argument ExportDataOptions exportDataOptions)
       throws UnresolvableObjectException, ResultFeatureStatUnresolvableException {
     ExperimentDTO experiment = plateServiceClient.getExperiment(exportDataOptions.experimentId());
-    List<PlateDTO> plates = plateServiceClient.getPlatesByExperiment(exportDataOptions.experimentId());
-
+    List<PlateDTO> plates = plateServiceClient.getPlatesByExperiment(
+        exportDataOptions.experimentId());
     List<PlateDTO> filteredPlates = plates.stream()
         .filter(plate -> isPlateFilteredByOptions(exportDataOptions, plate))
         .toList();
-
     Map<Long, List<ResultFeatureStatDTO>> plateFeatureStats = new HashMap<>();
     Map<Long, List<ResultFeatureStatDTO>> wellTypeFeatureStats = new HashMap<>();
     for (PlateDTO plate : filteredPlates) {
-      List<ResultFeatureStatDTO> featureStats = resultDataServiceClient.getLatestResultFeatureStatsForPlateId(plate.getId());
-      logger.info(String.format("Number of feature stats for plate %d: %d", plate.getId(), featureStats.size())) ;
-
-      if (CollectionUtils.isNotEmpty(featureStats)) {
-        if (exportDataOptions.includeFeatureStats()) {
-          List<ResultFeatureStatDTO> result = featureStats.stream().filter(fStats -> Objects.isNull(fStats.getWelltype())).toList();
-          logger.info(String.format("Number of plate feature stats for plate %d: %d", plate.getId(), result.size())) ;
-          plateFeatureStats.put(plate.getId(), result);
-        }
-
-        if (exportDataOptions.includeWellTypeFeatureStats()) {
-          List<ResultFeatureStatDTO> result = featureStats.stream().filter(fStats -> !Objects.isNull(fStats.getWelltype())).toList();
-          logger.info(String.format("Number of well type feature stats for plate %d: %d", plate.getId(), result.size())) ;
-          wellTypeFeatureStats.put(plate.getId(), result);
-        }
-      }
+      fetchPlateFeatureStats(exportDataOptions, plate, plateFeatureStats, wellTypeFeatureStats);
     }
-
     return createPlateDataExportRecords(exportDataOptions, experiment, filteredPlates,
         plateFeatureStats, wellTypeFeatureStats);
   }
@@ -105,29 +92,34 @@ public class ExportDataController {
   public List<WellDataRecord> exportWellData(@Argument ExportDataOptions exportDataOptions)
       throws UnresolvableObjectException {
     ExperimentDTO experiment = plateServiceClient.getExperiment(exportDataOptions.experimentId());
-    List<PlateDTO> plates = plateServiceClient.getPlatesByExperiment(exportDataOptions.experimentId());
+    List<PlateDTO> plates = plateServiceClient.getPlatesByExperiment(
+        exportDataOptions.experimentId());
 
     List<PlateDTO> filteredPlates = plates.stream()
         .filter(plate -> isPlateFilteredByOptions(exportDataOptions, plate))
         .toList();
 
     List<WellDataRecord> wellDataRecords = new ArrayList<>();
-    filteredPlates.stream().forEach(plate -> wellDataRecords.addAll(createWellDataExportRecords(exportDataOptions, experiment, plate)));
+    filteredPlates.stream().forEach(plate -> wellDataRecords.addAll(
+        createWellDataExportRecords(exportDataOptions, experiment, plate)));
     return wellDataRecords;
   }
 
   private boolean isPlateFilteredByOptions(ExportDataOptions exportDataOptions, PlateDTO plate) {
-    return (Objects.isNull(exportDataOptions.validatedBy()) || plate.getValidatedBy().equals(exportDataOptions.validatedBy())) &&
-        (Objects.isNull(exportDataOptions.validatedOnEnd()) || !plate.getValidatedOn().before(exportDataOptions.validatedOnEnd())) &&
-        (Objects.isNull(exportDataOptions.validatedOnBegin()) || !plate.getValidatedOn().after(exportDataOptions.validatedOnBegin())) &&
-        (Objects.isNull(exportDataOptions.approvedBy()) || !plate.getApprovedBy().equals(exportDataOptions.approvedBy())) &&
-        (Objects.isNull(exportDataOptions.approvedOnEnd()) || !plate.getApprovedOn().before(exportDataOptions.approvedOnEnd())) &&
-        (Objects.isNull(exportDataOptions.validatedOnBegin()) || !plate.getApprovedOn().after(exportDataOptions.validatedOnBegin())) &&
-        (exportDataOptions.includeInvalidatedPlates() || plate.getValidationStatus().getCode() >= 0) &&
-        (exportDataOptions.includeDisapprovedPlates() || plate.getApprovalStatus().getCode() >= 0);
+    boolean isValidatedByEqualToInput = Objects.isNull(exportDataOptions.validatedBy()) || plate.getValidatedBy()
+        .equals(exportDataOptions.validatedBy());
+    boolean isValidatedOnNotBeforeInputEnd = Objects.isNull(exportDataOptions.validatedOnEnd()) || !plate.getValidatedOn()
+        .before(exportDataOptions.validatedOnEnd());
+    boolean isValidatedOnNotAfterInputBegin = Objects.isNull(exportDataOptions.validatedOnBegin()) || !plate.getValidatedOn()
+        .after(exportDataOptions.validatedOnBegin());
+    boolean isApprovalStatusValid = exportDataOptions.includeDisapprovedPlates() || plate.getApprovalStatus().getCode() >= VALID_STATUS_CODE;
+    boolean isValidationStatusValid = exportDataOptions.includeInvalidatedPlates() || plate.getValidationStatus().getCode() >= VALID_STATUS_CODE;
+
+    return isValidatedByEqualToInput && isValidatedOnNotBeforeInputEnd && isValidatedOnNotAfterInputBegin && isApprovalStatusValid && isValidationStatusValid;
   }
 
-  private List<PlateDataRecord> createPlateDataExportRecords(ExportDataOptions exportDataOptions, ExperimentDTO experiment,
+  private List<PlateDataRecord> createPlateDataExportRecords(ExportDataOptions exportDataOptions,
+      ExperimentDTO experiment,
       List<PlateDTO> plates, Map<Long, List<ResultFeatureStatDTO>> plateFeatureStats,
       Map<Long, List<ResultFeatureStatDTO>> wellTypeFeatureStats) {
     return plates.stream()
@@ -138,35 +130,92 @@ public class ExportDataController {
 
   private List<WellDataRecord> createWellDataExportRecords(ExportDataOptions exportDataOptions,
       ExperimentDTO experiment, PlateDTO plate) {
+
     try {
+      ResultSetDTO latestPlateResultSet = resultDataServiceClient.getLatestResultSetByPlateId(
+          plate.getId());
+      List<ResultDataDTO> wellFeatureData = fetchWellFeatureData(exportDataOptions,
+          latestPlateResultSet);
       List<WellDTO> plateWells = plateServiceClient.getWells(plate.getId());
-      return plateWells.stream().map(well -> WellDataRecord.builder()
-              .experimentId(experiment.getId())
-              .experimentName(experiment.getName())
-              .plateId(plate.getId())
-              .barcode(plate.getBarcode())
-              .validationStatus(Optional.ofNullable(plate.getValidationStatus())
-                  .map(Enum::name).orElse(null))
-              .validatedOn(Optional.ofNullable(plate.getValidatedOn())
-                  .map(date -> new SimpleDateFormat("dd-MM-yyyy").format(date)).orElse(null))
-              .validatedBy(plate.getApprovedBy())
-              .approvalStatus(Optional.ofNullable(plate.getApprovalStatus())
-                  .map(Enum::name).orElse(null))
-              .approvedOn(Optional.ofNullable(plate.getApprovedOn())
-                  .map(date -> new SimpleDateFormat("dd-MM-yyyy").format(date)).orElse(null))
-              .approvedBy(plate.getApprovedBy())
-              .wellId(well.getId())
-              .rowNr(well.getRow())
-              .columnNr(well.getColumn())
-              .wellType(well.getWellType())
-              .substanceType(Optional.ofNullable(well.getWellSubstance()).map(WellSubstanceDTO::getType).orElse(null))
-              .substanceName(Optional.ofNullable(well.getWellSubstance()).map(WellSubstanceDTO::getName).orElse(null))
-              .concentration(Optional.ofNullable(well.getWellSubstance()).map(WellSubstanceDTO::getConcentration).orElse(null))
-              .build())
-          .toList();
-    } catch (UnresolvableObjectException e) {
+
+      return plateWells.stream()
+          .map(well -> createWellDataRecord(well, wellFeatureData, experiment, plate))
+          .collect(Collectors.toList());
+    } catch (UnresolvableObjectException | ResultSetUnresolvableException |
+             ResultDataUnresolvableException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private void fetchPlateFeatureStats(ExportDataOptions exportDataOptions, PlateDTO plate,
+      Map<Long, List<ResultFeatureStatDTO>> plateFeatureStats,
+      Map<Long, List<ResultFeatureStatDTO>> wellTypeFeatureStats) throws ResultFeatureStatUnresolvableException {
+    List<ResultFeatureStatDTO> featureStats = resultDataServiceClient.getLatestResultFeatureStatsForPlateId(
+        plate.getId());
+    if (CollectionUtils.isNotEmpty(featureStats)) {
+      if (exportDataOptions.includeFeatureStats()) {
+        List<ResultFeatureStatDTO> plateFeatureStatsList = featureStats.stream()
+            .filter(fStats -> Objects.isNull(fStats.getWelltype())).toList();
+        plateFeatureStats.put(plate.getId(), plateFeatureStatsList);
+      }
+      if (exportDataOptions.includeWellTypeFeatureStats()) {
+        List<ResultFeatureStatDTO> wellTypeFeatureStatsList = featureStats.stream()
+            .filter(fStats -> Objects.nonNull(fStats.getWelltype())).toList();
+        wellTypeFeatureStats.put(plate.getId(), wellTypeFeatureStatsList);
+      }
+    }
+  }
+
+  private List<ResultDataDTO> fetchWellFeatureData(ExportDataOptions exportDataOptions,
+      ResultSetDTO latestPlateResultSet)
+      throws ResultDataUnresolvableException {
+    List<ResultDataDTO> list = new ArrayList<>();
+    for (FeatureInput selectedFeature : exportDataOptions.selectedFeatures()) {
+      ResultDataDTO resultData = resultDataServiceClient.getResultData(latestPlateResultSet.getId(),
+          selectedFeature.featureId());
+      if (!Objects.isNull(resultData)) {
+        list.add(resultData);
+      }
+    }
+    return list;
+  }
+
+  private WellDataRecord createWellDataRecord(WellDTO well, List<ResultDataDTO> wellFeatureData,
+      ExperimentDTO experiment, PlateDTO plate) {
+    List<WellFeatureValueRecord> featureRecords = wellFeatureData.stream()
+        .map(resultData -> createWellFeatureValueRecord(resultData, well))
+        .collect(Collectors.toList());
+
+    return WellDataRecord.builder()
+        .experimentId(experiment.getId())
+        .experimentName(experiment.getName())
+        .plateId(plate.getId())
+        .barcode(plate.getBarcode())
+        .validationStatus(formatEnum(plate.getValidationStatus()))
+        .validatedOn(formatDate(plate.getValidatedOn()))
+        .validatedBy(plate.getValidatedBy())
+        .approvalStatus(formatEnum(plate.getApprovalStatus()))
+        .approvedOn(formatDate(plate.getApprovedOn()))
+        .approvedBy(plate.getApprovedBy())
+        .wellId(well.getId())
+        .wellNr(well.getWellNr())
+        .rowNr(well.getRow())
+        .columnNr(well.getColumn())
+        .wellType(well.getWellType())
+        .substanceType(getSubstanceType(well))
+        .substanceName(getSubstanceName(well))
+        .concentration(getConcentration(well))
+        .features(featureRecords)
+        .build();
+  }
+
+  private WellFeatureValueRecord createWellFeatureValueRecord(ResultDataDTO resultData,
+      WellDTO well) {
+    return WellFeatureValueRecord.builder()
+        .featureId(resultData.getFeatureId())
+        .resultSetId(resultData.getResultSetId())
+        .value(resultData.getValues()[well.getColumn() - 1])
+        .build();
   }
 
   private PlateDataRecord createPlateExportRecord(ExportDataOptions exportDataOptions,
@@ -179,17 +228,14 @@ public class ExportDataController {
         .barcode(plate.getBarcode())
         .plateTemplateId(plate.getLinkTemplateId())
         .plateTemplateName(plate.getLinkTemplateName())
-        .validationStatus(Optional.ofNullable(plate.getValidationStatus())
-            .map(Enum::name).orElse(null))
-        .validatedOn(Optional.ofNullable(plate.getValidatedOn())
-            .map(date -> new SimpleDateFormat("dd-MM-yyyy").format(date)).orElse(null))
+        .validationStatus(formatEnum(plate.getValidationStatus()))
+        .validatedOn(formatDate(plate.getValidatedOn()))
         .validatedBy(plate.getApprovedBy())
-        .approvalStatus(Optional.ofNullable(plate.getApprovalStatus())
-            .map(Enum::name).orElse(null))
-        .approvedOn(Optional.ofNullable(plate.getApprovedOn())
-            .map(date -> new SimpleDateFormat("dd-MM-yyyy").format(date)).orElse(null))
+        .approvalStatus(formatEnum(plate.getApprovalStatus()))
+        .approvedOn(formatDate(plate.getApprovedOn()))
         .approvedBy(plate.getApprovedBy())
-        .comment(String.format("%s; %s", plate.getInvalidatedReason(), plate.getDisapprovedReason()))
+        .comment(
+            String.format("%s; %s", plate.getInvalidatedReason(), plate.getDisapprovedReason()))
         .features(createFeatures(exportDataOptions, plateFeatureStats, wellTypeFeatureStats))
         .build();
   }
@@ -252,6 +298,29 @@ public class ExportDataController {
     }
 
     return features;
+  }
+
+  private String getSubstanceType(WellDTO well) {
+    return Optional.ofNullable(well.getWellSubstance()).map(WellSubstanceDTO::getType).orElse(null);
+  }
+
+  private String getSubstanceName(WellDTO well) {
+    return Optional.ofNullable(well.getWellSubstance()).map(WellSubstanceDTO::getName).orElse(null);
+  }
+
+  private Double getConcentration(WellDTO well) {
+    return Optional.ofNullable(well.getWellSubstance()).map(WellSubstanceDTO::getConcentration)
+        .orElse(null);
+  }
+
+  private String formatDate(Date date) {
+    return Optional.ofNullable(date)
+        .map(d -> new SimpleDateFormat("dd-MM-yyyy").format(d)).orElse(null);
+  }
+
+  private String formatEnum(Enum<?> enumValue) {
+    return Optional.ofNullable(enumValue)
+        .map(Enum::name).orElse(null);
   }
 }
 
