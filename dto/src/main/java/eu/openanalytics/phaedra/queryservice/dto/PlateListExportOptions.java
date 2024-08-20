@@ -18,24 +18,22 @@
  * You should have received a copy of the Apache License
  * along with this program.  If not, see <http://www.apache.org/licenses/>
  */
-package eu.openanalytics.phaedra.queryservice.api;
+package eu.openanalytics.phaedra.queryservice.dto;
 
-import eu.openanalytics.phaedra.queryservice.model.PlateResultData;
-import eu.openanalytics.phaedra.queryservice.service.PlateResultDataService;
-import org.springframework.graphql.data.method.annotation.Argument;
-import org.springframework.stereotype.Controller;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import eu.openanalytics.phaedra.queryservice.record.FeatureInput;
+import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Controller
-public class PlateResultQueryController {
+@Data
+@NoArgsConstructor
+@Builder
+@AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class PlateListExportOptions {
+  List<FeatureInput> selectedFeatures;
 
-    private final PlateResultDataService plateResultDataService;
-
-    public PlateResultQueryController(PlateResultDataService plateResultDataService) {
-        this.plateResultDataService = plateResultDataService;
-    }
-
-    public PlateResultData plateResultData(@Argument Long plateId) {
-//        return plateResultDataService.getPlateResultData(plateId);
-        return null;
-    }
 }

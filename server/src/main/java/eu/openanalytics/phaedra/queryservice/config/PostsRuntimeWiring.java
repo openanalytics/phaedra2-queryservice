@@ -18,24 +18,20 @@
  * You should have received a copy of the Apache License
  * along with this program.  If not, see <http://www.apache.org/licenses/>
  */
-package eu.openanalytics.phaedra.queryservice.api;
+package eu.openanalytics.phaedra.queryservice.config;
 
-import eu.openanalytics.phaedra.queryservice.model.PlateResultData;
-import eu.openanalytics.phaedra.queryservice.service.PlateResultDataService;
-import org.springframework.graphql.data.method.annotation.Argument;
-import org.springframework.stereotype.Controller;
+import eu.openanalytics.phaedra.util.scalars.Scalars;
+import graphql.schema.idl.RuntimeWiring;
+import org.springframework.graphql.execution.RuntimeWiringConfigurer;
+import org.springframework.stereotype.Component;
 
-@Controller
-public class PlateResultQueryController {
-
-    private final PlateResultDataService plateResultDataService;
-
-    public PlateResultQueryController(PlateResultDataService plateResultDataService) {
-        this.plateResultDataService = plateResultDataService;
-    }
-
-    public PlateResultData plateResultData(@Argument Long plateId) {
-//        return plateResultDataService.getPlateResultData(plateId);
-        return null;
+@Component
+public class PostsRuntimeWiring implements RuntimeWiringConfigurer {
+    @Override
+    public void configure(RuntimeWiring.Builder builder) {
+        builder
+                .scalar(Scalars.dateType())
+                .scalar(Scalars.floatNaNType())
+                .build();
     }
 }

@@ -1,2 +1,94 @@
+scalar Date
+scalar FloatNaN
+
+input FeatureInput {
+    featureId: ID,
+    featureName: String,
+    protocolId: ID,
+    protocolName: String
+}
+
+input ExportDataOptions {
+    experimentId: ID,
+    selectedFeatures: [FeatureInput],
+    validatedBy: String,
+    validateOnBegin: Date,
+    validateOnEnd: Date,
+    approvedBy: String,
+    approvedOnBegin: Date,
+    approvedOnEnd: Date,
+    includeInvalidatedPlates: Boolean,
+    includeDisapprovedPlates: Boolean,
+    includeSummeryPlateSummery: Boolean,
+    includeFeatureStats: Boolean,
+    includeWellTypeFeatureStats: Boolean
+}
+
+type StatValueRecord {
+    name: String,
+    value: FloatNaN
+}
+
+type FeatureStatsRecord {
+    resultSetId: Int,
+    protocolId: Int,
+    protocolName: String,
+    featureId: Int,
+    featureName: String,
+    wellType: String,
+    stats: [StatValueRecord]
+}
+
+type PlateDataRecord {
+    experimentId: ID,
+    experimentName: String
+    plateId: ID,
+    barcode: String,
+    plateTemplateId: ID,
+    plateTemplateName: String,
+    validationStatus: String,
+    validatedBy: String,
+    validatedOn: String,
+    approvalStatus: String,
+    approvedBy: String,
+    approvedOn: String,
+    comment: String,
+    drc_count: Int,
+    sdp_count: Int,
+    features: [FeatureStatsRecord]
+}
+
+
+type FeatureValueRecord {
+    featureId: Int,
+    featureName: String,
+    protocolName: String,
+    value: FloatNaN
+}
+
+type WellDataRecord {
+    experimentId: ID,
+    experimentName: String
+    plateId: ID,
+    barcode: String,
+    plateTemplateId: ID,
+    plateTemplateName: String,
+    validationStatus: String,
+    approvalStatus: String,
+    comment: String,
+    wellId: ID,
+    wellNr: Int,
+    rowNr: Int,
+    columnNr: Int,
+    wellType: String,
+    substanceName: String,
+    substanceType: String,
+    concentration: FloatNaN,
+    isValid: Boolean,
+    features: [FeatureValueRecord],
+}
+
 type Query {
+    exportPlateListData(exportDataOptions: ExportDataOptions): [PlateDataRecord]
+    exportWellData(exportDataOptions: ExportDataOptions): [WellDataRecord]
 }

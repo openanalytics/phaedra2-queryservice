@@ -18,24 +18,16 @@
  * You should have received a copy of the Apache License
  * along with this program.  If not, see <http://www.apache.org/licenses/>
  */
-package eu.openanalytics.phaedra.queryservice.api;
+package eu.openanalytics.phaedra.queryservice.record;
 
-import eu.openanalytics.phaedra.queryservice.model.PlateResultData;
-import eu.openanalytics.phaedra.queryservice.service.PlateResultDataService;
-import org.springframework.graphql.data.method.annotation.Argument;
-import org.springframework.stereotype.Controller;
+import java.util.Date;
+import java.util.List;
 
-@Controller
-public class PlateResultQueryController {
+public record ExportDataOptions(long experimentId, List<FeatureInput> selectedFeatures,
+                                String validatedBy, Date validatedOnBegin, Date validatedOnEnd,
+                                String approvedBy, Date approvedOnBegin, Date approvedOnEnd,
+                                Boolean includeInvalidatedPlates, Boolean includeDisapprovedPlates,
+                                Boolean includeSummeryPlateSummery, Boolean includeFeatureStats,
+                                Boolean includeWellTypeFeatureStats) {
 
-    private final PlateResultDataService plateResultDataService;
-
-    public PlateResultQueryController(PlateResultDataService plateResultDataService) {
-        this.plateResultDataService = plateResultDataService;
-    }
-
-    public PlateResultData plateResultData(@Argument Long plateId) {
-//        return plateResultDataService.getPlateResultData(plateId);
-        return null;
-    }
 }
