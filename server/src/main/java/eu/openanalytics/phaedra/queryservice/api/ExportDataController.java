@@ -26,13 +26,15 @@ import eu.openanalytics.phaedra.plateservice.dto.ExperimentDTO;
 import eu.openanalytics.phaedra.plateservice.dto.PlateDTO;
 import eu.openanalytics.phaedra.plateservice.dto.WellDTO;
 import eu.openanalytics.phaedra.plateservice.dto.WellSubstanceDTO;
-import eu.openanalytics.phaedra.queryservice.record.ExportDataOptions;
+import eu.openanalytics.phaedra.queryservice.record.ExportPlateDataOptions;
+import eu.openanalytics.phaedra.queryservice.record.ExportWellDataOptions;
 import eu.openanalytics.phaedra.queryservice.record.FeatureInput;
 import eu.openanalytics.phaedra.queryservice.record.FeatureStatsRecord;
 import eu.openanalytics.phaedra.queryservice.record.PlateDataRecord;
+import eu.openanalytics.phaedra.queryservice.record.PlateFilterOptions;
 import eu.openanalytics.phaedra.queryservice.record.StatValueRecord;
 import eu.openanalytics.phaedra.queryservice.record.WellDataRecord;
-import eu.openanalytics.phaedra.queryservice.record.WellFeatureValueRecord;
+import eu.openanalytics.phaedra.queryservice.record.FeatureValueRecord;
 import eu.openanalytics.phaedra.resultdataservice.client.ResultDataServiceClient;
 import eu.openanalytics.phaedra.resultdataservice.client.exception.ResultDataUnresolvableException;
 import eu.openanalytics.phaedra.resultdataservice.client.exception.ResultFeatureStatUnresolvableException;
@@ -62,8 +64,6 @@ public class ExportDataController {
   private final PlateServiceClient plateServiceClient;
   private final ResultDataServiceClient resultDataServiceClient;
 
-//  private final Logger logger = LoggerFactory.getLogger(getClass());
-
   public ExportDataController(PlateServiceClient plateServiceClient,
       ResultDataServiceClient resultDataServiceClient) {
     this.plateServiceClient = plateServiceClient;
@@ -71,75 +71,77 @@ public class ExportDataController {
   }
 
   @QueryMapping
-  public List<PlateDataRecord> exportPlateListData(@Argument ExportDataOptions exportDataOptions)
+  public List<PlateDataRecord> exportPlateListData(@Argument ExportPlateDataOptions exportPlateDataOptions)
       throws UnresolvableObjectException, ResultFeatureStatUnresolvableException {
-    ExperimentDTO experiment = plateServiceClient.getExperiment(exportDataOptions.experimentId());
+    ExperimentDTO experiment = plateServiceClient.getExperiment(exportPlateDataOptions.experimentId());
     List<PlateDTO> plates = plateServiceClient.getPlatesByExperiment(
-        exportDataOptions.experimentId());
+        exportPlateDataOptions.experimentId());
     List<PlateDTO> filteredPlates = plates.stream()
-        .filter(plate -> isPlateFilteredByOptions(exportDataOptions, plate))
+        .filter(plate -> isPlateFilteredByOptions(exportPlateDataOptions.plateFilterOptions(), plate))
         .toList();
     Map<Long, List<ResultFeatureStatDTO>> plateFeatureStats = new HashMap<>();
     Map<Long, List<ResultFeatureStatDTO>> wellTypeFeatureStats = new HashMap<>();
     for (PlateDTO plate : filteredPlates) {
-      fetchPlateFeatureStats(exportDataOptions, plate, plateFeatureStats, wellTypeFeatureStats);
+      fetchPlateFeatureStats(exportPlateDataOptions, plate, plateFeatureStats, wellTypeFeatureStats);
     }
-    return createPlateDataExportRecords(exportDataOptions, experiment, filteredPlates,
+    return createPlateDataExportRecords(exportPlateDataOptions, experiment, filteredPlates,
         plateFeatureStats, wellTypeFeatureStats);
   }
 
   @QueryMapping
-  public List<WellDataRecord> exportWellData(@Argument ExportDataOptions exportDataOptions)
+  public List<WellDataRecord> exportWellData(@Argument ExportWellDataOptions exportWellDataOptions)
       throws UnresolvableObjectException {
-    ExperimentDTO experiment = plateServiceClient.getExperiment(exportDataOptions.experimentId());
+    ExperimentDTO experiment = plateServiceClient.getExperiment(exportWellDataOptions.experimentId());
     List<PlateDTO> plates = plateServiceClient.getPlatesByExperiment(
-        exportDataOptions.experimentId());
+        exportWellDataOptions.experimentId());
 
     List<PlateDTO> filteredPlates = plates.stream()
-        .filter(plate -> isPlateFilteredByOptions(exportDataOptions, plate))
+        .filter(plate -> isPlateFilteredByOptions(exportWellDataOptions.plateFilterOptions(), plate))
         .toList();
 
     List<WellDataRecord> wellDataRecords = new ArrayList<>();
     filteredPlates.stream().forEach(plate -> wellDataRecords.addAll(
-        createWellDataExportRecords(exportDataOptions, experiment, plate)));
+        createWellDataExportRecords(exportWellDataOptions, experiment, plate)));
     return wellDataRecords;
   }
 
-  private boolean isPlateFilteredByOptions(ExportDataOptions exportDataOptions, PlateDTO plate) {
-    boolean isValidatedByEqualToInput = Objects.isNull(exportDataOptions.validatedBy()) || plate.getValidatedBy()
-        .equals(exportDataOptions.validatedBy());
-    boolean isValidatedOnNotBeforeInputEnd = Objects.isNull(exportDataOptions.validatedOnEnd()) || !plate.getValidatedOn()
-        .before(exportDataOptions.validatedOnEnd());
-    boolean isValidatedOnNotAfterInputBegin = Objects.isNull(exportDataOptions.validatedOnBegin()) || !plate.getValidatedOn()
-        .after(exportDataOptions.validatedOnBegin());
-    boolean isApprovalStatusValid = exportDataOptions.includeDisapprovedPlates() || plate.getApprovalStatus().getCode() >= VALID_STATUS_CODE;
-    boolean isValidationStatusValid = exportDataOptions.includeInvalidatedPlates() || plate.getValidationStatus().getCode() >= VALID_STATUS_CODE;
+  private boolean isPlateFilteredByOptions(PlateFilterOptions plateFilterOptions, PlateDTO plate) {
+    boolean isValidatedByEqualToInput = Objects.isNull(plateFilterOptions.validatedBy()) || plate.getValidatedBy()
+        .equals(plateFilterOptions.validatedBy());
+    boolean isValidatedOnNotBeforeInputEnd = Objects.isNull(plateFilterOptions.validatedOnEnd()) || !plate.getValidatedOn()
+        .before(plateFilterOptions.validatedOnEnd());
+    boolean isValidatedOnNotAfterInputBegin = Objects.isNull(plateFilterOptions.validatedOnBegin()) || !plate.getValidatedOn()
+        .after(plateFilterOptions.validatedOnBegin());
+    boolean isApprovalStatusValid = plateFilterOptions.includeDisapprovedPlates() || plate.getApprovalStatus().getCode() >= VALID_STATUS_CODE;
+    boolean isValidationStatusValid = plateFilterOptions.includeInvalidatedPlates() || plate.getValidationStatus().getCode() >= VALID_STATUS_CODE;
 
     return isValidatedByEqualToInput && isValidatedOnNotBeforeInputEnd && isValidatedOnNotAfterInputBegin && isApprovalStatusValid && isValidationStatusValid;
   }
 
-  private List<PlateDataRecord> createPlateDataExportRecords(ExportDataOptions exportDataOptions,
+  private List<PlateDataRecord> createPlateDataExportRecords(
+      ExportPlateDataOptions exportPlateDataOptions,
       ExperimentDTO experiment,
       List<PlateDTO> plates, Map<Long, List<ResultFeatureStatDTO>> plateFeatureStats,
       Map<Long, List<ResultFeatureStatDTO>> wellTypeFeatureStats) {
     return plates.stream()
-        .map(plate -> createPlateExportRecord(exportDataOptions, experiment, plate,
+        .map(plate -> createPlateExportRecord(exportPlateDataOptions, experiment, plate,
             plateFeatureStats.get(plate.getId()), wellTypeFeatureStats.get(plate.getId())))
         .toList();
   }
 
-  private List<WellDataRecord> createWellDataExportRecords(ExportDataOptions exportDataOptions,
+  private List<WellDataRecord> createWellDataExportRecords(ExportWellDataOptions exportWellDataOptions,
       ExperimentDTO experiment, PlateDTO plate) {
     List<WellDataRecord> result = new ArrayList<>();
     try {
       ResultSetDTO latestPlateResultSet = resultDataServiceClient.getLatestResultSetByPlateId(
           plate.getId());
       if (latestPlateResultSet != null) {
-        List<ResultDataDTO> wellFeatureData = fetchWellFeatureData(exportDataOptions,
+        Map<FeatureInput, ResultDataDTO> wellFeatureData = fetchWellFeatureData(exportWellDataOptions,
             latestPlateResultSet);
         List<WellDTO> plateWells = plateServiceClient.getWells(plate.getId());
 
         result.addAll(plateWells.stream()
+                .filter(well -> isWellFilteredOut(exportWellDataOptions, well))
             .map(well -> createWellDataRecord(well, wellFeatureData, experiment, plate))
             .toList());
       }
@@ -149,18 +151,25 @@ public class ExportDataController {
     return result;
   }
 
-  private void fetchPlateFeatureStats(ExportDataOptions exportDataOptions, PlateDTO plate,
+  private boolean isWellFilteredOut(ExportWellDataOptions exportWellDataOptions, WellDTO well) {
+    boolean isRejectionStatusValid = exportWellDataOptions.includeRejectedWells() || well.getStatus().getCode() >= VALID_STATUS_CODE;
+    boolean isWellTypeValid = exportWellDataOptions.wellTypeFilter().isEmpty() || exportWellDataOptions.wellTypeFilter().contains(well.getWellType());
+
+    return isRejectionStatusValid && isWellTypeValid;
+  }
+
+  private void fetchPlateFeatureStats(ExportPlateDataOptions exportPlateDataOptions, PlateDTO plate,
       Map<Long, List<ResultFeatureStatDTO>> plateFeatureStats,
       Map<Long, List<ResultFeatureStatDTO>> wellTypeFeatureStats) throws ResultFeatureStatUnresolvableException {
     List<ResultFeatureStatDTO> featureStats = resultDataServiceClient.getLatestResultFeatureStatsForPlateId(
         plate.getId());
     if (CollectionUtils.isNotEmpty(featureStats)) {
-      if (exportDataOptions.includeFeatureStats()) {
+      if (exportPlateDataOptions.includeFeatureStats()) {
         List<ResultFeatureStatDTO> plateFeatureStatsList = featureStats.stream()
             .filter(fStats -> Objects.isNull(fStats.getWelltype())).toList();
         plateFeatureStats.put(plate.getId(), plateFeatureStatsList);
       }
-      if (exportDataOptions.includeWellTypeFeatureStats()) {
+      if (exportPlateDataOptions.includeWellTypeFeatureStats()) {
         List<ResultFeatureStatDTO> wellTypeFeatureStatsList = featureStats.stream()
             .filter(fStats -> Objects.nonNull(fStats.getWelltype())).toList();
         wellTypeFeatureStats.put(plate.getId(), wellTypeFeatureStatsList);
@@ -168,30 +177,27 @@ public class ExportDataController {
     }
   }
 
-  private List<ResultDataDTO> fetchWellFeatureData(ExportDataOptions exportDataOptions,
+  private Map<FeatureInput, ResultDataDTO> fetchWellFeatureData(ExportWellDataOptions exportWellDataOptions,
       ResultSetDTO latestPlateResultSet) {
-    List<ResultDataDTO> list = new ArrayList<>();
-    for (FeatureInput selectedFeature : exportDataOptions.selectedFeatures()) {
+    Map<FeatureInput, ResultDataDTO> results = new HashMap<>();
+    for (FeatureInput selectedFeature : exportWellDataOptions.selectedFeatures()) {
       try {
         ResultDataDTO resultData = resultDataServiceClient.getResultData(latestPlateResultSet.getId(),
             selectedFeature.featureId());
-
-        if (!Objects.isNull(resultData)) {
-          list.add(resultData);
-        }
+        results.put(selectedFeature, resultData);
       } catch (ResultDataUnresolvableException e) {
         //TODO: Catch error correctly
       }
     }
-    return list;
+    return results;
   }
 
-  private WellDataRecord createWellDataRecord(WellDTO well, List<ResultDataDTO> wellFeatureData,
+  private WellDataRecord createWellDataRecord(WellDTO well, Map<FeatureInput, ResultDataDTO> wellFeatureData,
       ExperimentDTO experiment, PlateDTO plate) {
-    List<WellFeatureValueRecord> featureRecords = wellFeatureData.stream()
-        .map(resultData -> createWellFeatureValueRecord(resultData, well))
-        .collect(Collectors.toList());
-
+    List<FeatureValueRecord> featureRecords = new ArrayList<>();
+    for (FeatureInput featureInput : wellFeatureData.keySet()) {
+      featureRecords.add(createWellFeatureValueRecord(featureInput, wellFeatureData.get(featureInput), well));
+    }
     return WellDataRecord.builder()
         .experimentId(experiment.getId())
         .experimentName(experiment.getName())
@@ -215,16 +221,18 @@ public class ExportDataController {
         .build();
   }
 
-  private WellFeatureValueRecord createWellFeatureValueRecord(ResultDataDTO resultData,
-      WellDTO well) {
-    return WellFeatureValueRecord.builder()
+  private FeatureValueRecord createWellFeatureValueRecord(FeatureInput featureInput, ResultDataDTO resultData, WellDTO well) {
+    return FeatureValueRecord.builder()
         .featureId(resultData.getFeatureId())
+        .featureName(featureInput.featureName())
+        .protocolId(featureInput.protocolId())
+        .protocolName(featureInput.protocolName())
         .resultSetId(resultData.getResultSetId())
-        .value(resultData.getValues()[well.getColumn() - 1])
+        .value(resultData.getValues()[well.getWellNr() - 1])
         .build();
   }
 
-  private PlateDataRecord createPlateExportRecord(ExportDataOptions exportDataOptions,
+  private PlateDataRecord createPlateExportRecord(ExportPlateDataOptions exportPlateDataOptions,
       ExperimentDTO experiment, PlateDTO plate, List<ResultFeatureStatDTO> plateFeatureStats,
       List<ResultFeatureStatDTO> wellTypeFeatureStats) {
     return PlateDataRecord.builder()
@@ -242,7 +250,7 @@ public class ExportDataController {
         .approvedBy(plate.getApprovedBy())
         .comment(
             String.format("%s; %s", plate.getInvalidatedReason(), plate.getDisapprovedReason()))
-        .features(createFeatures(exportDataOptions, plateFeatureStats, wellTypeFeatureStats))
+        .features(createFeatures(exportPlateDataOptions, plateFeatureStats, wellTypeFeatureStats))
         .build();
   }
 
@@ -270,13 +278,13 @@ public class ExportDataController {
     return Optional.empty();
   }
 
-  private List<FeatureStatsRecord> createFeatures(ExportDataOptions exportDataOptions,
+  private List<FeatureStatsRecord> createFeatures(ExportPlateDataOptions exportPlateDataOptions,
       List<ResultFeatureStatDTO> plateFeatureStats,
       List<ResultFeatureStatDTO> wellTypeFeatureStats) {
     List<FeatureStatsRecord> features = new ArrayList<>();
 
     if (CollectionUtils.isNotEmpty(plateFeatureStats)) {
-      for (FeatureInput selectedFeature : exportDataOptions.selectedFeatures()) {
+      for (FeatureInput selectedFeature : exportPlateDataOptions.selectedFeatures()) {
         List<ResultFeatureStatDTO> featureStatsFiltered = plateFeatureStats.stream()
             .filter(fStat -> fStat.getFeatureId().equals(selectedFeature.featureId()))
             .toList();
@@ -288,7 +296,7 @@ public class ExportDataController {
     }
 
     if (CollectionUtils.isNotEmpty(wellTypeFeatureStats)) {
-      for (FeatureInput selectedFeature : exportDataOptions.selectedFeatures()) {
+      for (FeatureInput selectedFeature : exportPlateDataOptions.selectedFeatures()) {
         Map<String, List<ResultFeatureStatDTO>> featureStatsFiltered = wellTypeFeatureStats.stream()
             .filter(fStat -> fStat.getFeatureId().equals(selectedFeature.featureId()))
             .collect(Collectors.groupingBy(ResultFeatureStatDTO::getWelltype));

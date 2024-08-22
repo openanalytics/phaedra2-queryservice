@@ -8,9 +8,7 @@ input FeatureInput {
     protocolName: String
 }
 
-input ExportDataOptions {
-    experimentId: ID,
-    selectedFeatures: [FeatureInput],
+input PlateFilterOptions {
     validatedBy: String,
     validateOnBegin: Date,
     validateOnEnd: Date,
@@ -19,9 +17,26 @@ input ExportDataOptions {
     approvedOnEnd: Date,
     includeInvalidatedPlates: Boolean,
     includeDisapprovedPlates: Boolean,
+}
+
+input ExportPlateDataOptions {
+    experimentId: ID,
+    selectedFeatures: [FeatureInput],
+    plateFilterOptions: PlateFilterOptions,
     includeSummeryPlateSummery: Boolean,
     includeFeatureStats: Boolean,
     includeWellTypeFeatureStats: Boolean
+}
+
+input ExportWellDataOptions {
+    experimentId: ID,
+    selectedFeatures: [FeatureInput],
+    plateFilterOptions: PlateFilterOptions,
+    includeRejectedWells: Boolean ,
+    includeInvalidatedWells: Boolean,
+    wellTypeFilter: [String],
+    includeBasicCurveProperties: Boolean,
+    includeAllCurveProperties: Boolean
 }
 
 type StatValueRecord {
@@ -62,7 +77,9 @@ type PlateDataRecord {
 type FeatureValueRecord {
     featureId: Int,
     featureName: String,
+    protocolId: ID,
     protocolName: String,
+    resultSetId: ID,
     value: FloatNaN
 }
 
@@ -89,6 +106,6 @@ type WellDataRecord {
 }
 
 type Query {
-    exportPlateListData(exportDataOptions: ExportDataOptions): [PlateDataRecord]
-    exportWellData(exportDataOptions: ExportDataOptions): [WellDataRecord]
+    exportPlateListData(exportPlateDataOptions: ExportPlateDataOptions): [PlateDataRecord]
+    exportWellData(exportWellDataOptions: ExportWellDataOptions): [WellDataRecord]
 }

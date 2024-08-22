@@ -20,14 +20,14 @@
  */
 package eu.openanalytics.phaedra.queryservice.record;
 
-import java.util.Date;
-import java.util.List;
+import lombok.Builder;
 
-public record ExportDataOptions(long experimentId, List<FeatureInput> selectedFeatures,
-                                String validatedBy, Date validatedOnBegin, Date validatedOnEnd,
-                                String approvedBy, Date approvedOnBegin, Date approvedOnEnd,
-                                Boolean includeInvalidatedPlates, Boolean includeDisapprovedPlates,
-                                Boolean includeSummeryPlateSummery, Boolean includeFeatureStats,
-                                Boolean includeWellTypeFeatureStats) {
+@Builder
+public record FeatureValueRecord(long resultSetId,
+                                 long protocolId,
+                                 String protocolName,
+                                 long featureId,
+                                 String featureName,
+                                 float value) {
 
 }

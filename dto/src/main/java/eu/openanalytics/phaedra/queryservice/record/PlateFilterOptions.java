@@ -20,14 +20,10 @@
  */
 package eu.openanalytics.phaedra.queryservice.record;
 
-import lombok.Builder;
+import java.util.Date;
 
-@Builder
-public record WellFeatureValueRecord(long resultSetId,
-                                     long protocolId,
-                                     String protocolName,
-                                     long featureId,
-                                     String featureName,
-                                     float value) {
+public record PlateFilterOptions(String validatedBy, Date validatedOnBegin, Date validatedOnEnd,
+                                 String approvedBy, Date approvedOnBegin, Date approvedOnEnd,
+                                 Boolean includeInvalidatedPlates, Boolean includeDisapprovedPlates) {
 
 }
