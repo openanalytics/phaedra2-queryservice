@@ -43,6 +43,6 @@ public record WellDataRecord(long experimentId,
                              String substanceType,
                              Double concentration,
                              Boolean isValid,
-                             List<WellFeatureValueRecord> features) {
+                             List<FeatureValueRecord> features) {
 
 }

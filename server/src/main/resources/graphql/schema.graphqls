@@ -77,7 +77,9 @@ type PlateDataRecord {
 type FeatureValueRecord {
     featureId: Int,
     featureName: String,
+    protocolId: ID,
     protocolName: String,
+    resultSetId: ID,
     value: FloatNaN
 }
 

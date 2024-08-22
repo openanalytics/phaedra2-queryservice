@@ -34,7 +34,7 @@ import eu.openanalytics.phaedra.queryservice.record.PlateDataRecord;
 import eu.openanalytics.phaedra.queryservice.record.PlateFilterOptions;
 import eu.openanalytics.phaedra.queryservice.record.StatValueRecord;
 import eu.openanalytics.phaedra.queryservice.record.WellDataRecord;
-import eu.openanalytics.phaedra.queryservice.record.WellFeatureValueRecord;
+import eu.openanalytics.phaedra.queryservice.record.FeatureValueRecord;
 import eu.openanalytics.phaedra.resultdataservice.client.ResultDataServiceClient;
 import eu.openanalytics.phaedra.resultdataservice.client.exception.ResultDataUnresolvableException;
 import eu.openanalytics.phaedra.resultdataservice.client.exception.ResultFeatureStatUnresolvableException;
@@ -136,7 +136,7 @@ public class ExportDataController {
       ResultSetDTO latestPlateResultSet = resultDataServiceClient.getLatestResultSetByPlateId(
           plate.getId());
       if (latestPlateResultSet != null) {
-        List<ResultDataDTO> wellFeatureData = fetchWellFeatureData(exportWellDataOptions,
+        Map<FeatureInput, ResultDataDTO> wellFeatureData = fetchWellFeatureData(exportWellDataOptions,
             latestPlateResultSet);
         List<WellDTO> plateWells = plateServiceClient.getWells(plate.getId());
 
@@ -177,30 +177,27 @@ public class ExportDataController {
     }
   }
 
-  private List<ResultDataDTO> fetchWellFeatureData(ExportWellDataOptions exportWellDataOptions,
+  private Map<FeatureInput, ResultDataDTO> fetchWellFeatureData(ExportWellDataOptions exportWellDataOptions,
       ResultSetDTO latestPlateResultSet) {
-    List<ResultDataDTO> list = new ArrayList<>();
+    Map<FeatureInput, ResultDataDTO> results = new HashMap<>();
     for (FeatureInput selectedFeature : exportWellDataOptions.selectedFeatures()) {
       try {
         ResultDataDTO resultData = resultDataServiceClient.getResultData(latestPlateResultSet.getId(),
             selectedFeature.featureId());
-
-        if (!Objects.isNull(resultData)) {
-          list.add(resultData);
-        }
+        results.put(selectedFeature, resultData);
       } catch (ResultDataUnresolvableException e) {
         //TODO: Catch error correctly
       }
     }
-    return list;
+    return results;
   }
 
-  private WellDataRecord createWellDataRecord(WellDTO well, List<ResultDataDTO> wellFeatureData,
+  private WellDataRecord createWellDataRecord(WellDTO well, Map<FeatureInput, ResultDataDTO> wellFeatureData,
       ExperimentDTO experiment, PlateDTO plate) {
-    List<WellFeatureValueRecord> featureRecords = wellFeatureData.stream()
-        .map(resultData -> createWellFeatureValueRecord(resultData, well))
-        .collect(Collectors.toList());
-
+    List<FeatureValueRecord> featureRecords = new ArrayList<>();
+    for (FeatureInput featureInput : wellFeatureData.keySet()) {
+      featureRecords.add(createWellFeatureValueRecord(featureInput, wellFeatureData.get(featureInput), well));
+    }
     return WellDataRecord.builder()
         .experimentId(experiment.getId())
         .experimentName(experiment.getName())
@@ -224,12 +221,14 @@ public class ExportDataController {
         .build();
   }
 
-  private WellFeatureValueRecord createWellFeatureValueRecord(ResultDataDTO resultData,
-      WellDTO well) {
-    return WellFeatureValueRecord.builder()
+  private FeatureValueRecord createWellFeatureValueRecord(FeatureInput featureInput, ResultDataDTO resultData, WellDTO well) {
+    return FeatureValueRecord.builder()
         .featureId(resultData.getFeatureId())
+        .featureName(featureInput.featureName())
+        .protocolId(featureInput.protocolId())
+        .protocolName(featureInput.protocolName())
         .resultSetId(resultData.getResultSetId())
-        .value(resultData.getValues()[well.getColumn() - 1])
+        .value(resultData.getValues()[well.getWellNr() - 1])
         .build();
   }
 
