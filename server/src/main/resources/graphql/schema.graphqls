@@ -105,7 +105,69 @@ type WellDataRecord {
     features: [FeatureValueRecord],
 }
 
+type WellRecord {
+    id: ID
+    plateId: ID
+    row: Int
+    column: Int
+    wellNr: Int
+    wellType: String
+    status: WellStatus
+    description: String
+    wellSubstance: WellSubstanceDTO
+    tags: [String]
+}
+
+type PropertyRecord {
+    name: String!
+    value: String
+}
+
+type ProjectRecord {
+    id: ID!
+    name: String
+    description: String
+    createdOn: Date
+    createdBy: String
+    updatedOn: Date
+    updatedBy: String
+
+    tags: [String]
+    properties: [PropertyRecord]
+}
+
+input StringFilter {
+    startsWith: String
+    endsWith: String
+    contains: String
+    regex: String
+}
+
+input DateFilter {
+    before: Date
+    after: Date
+    on: Date
+}
+
+input MetaDataFilter {
+    containsTags: [String]
+    containsProperties: [String]
+}
+
+input ProjectFilter {
+    id: ID
+    name: StringFilter
+    description: StringFilter
+    createdOn: DateFilter
+    createdBy: StringFilter
+    updatedOn: DateFilter
+    updatedBy: StringFilter
+    tags: MetaDataFilter
+    properties: MetaDataFilter
+}
+
 type Query {
     exportPlateListData(exportPlateDataOptions: ExportPlateDataOptions): [PlateDataRecord]
     exportWellData(exportWellDataOptions: ExportWellDataOptions): [WellDataRecord]
+    projects(filter: ProjectFilter): [ProjectRecord]
 }
