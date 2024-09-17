@@ -138,6 +138,25 @@ type ProjectDTO {
     id: ID!
     name: String
     description: String
+
+    createdOn: Date
+    createdBy: String
+    updatedOn: Date
+    updatedBy: String
+
+    tags: [String]
+    properties: [PropertyDTO]
+}
+
+type ExperimentDTO {
+    id: ID
+    name: String
+    description: String
+    status: String
+    projectId: ID
+    multiploMethod: String
+    multiploParameter: String
+
     createdOn: Date
     createdBy: String
     updatedOn: Date
@@ -164,8 +183,25 @@ input MetaDataFilter {
     includes: [String]
 }
 
+input IdFilter {
+    equals: ID
+    in: [ID]
+}
+
 input ProjectFilter {
     name: StringFilter
+    createdOn: DateFilter
+    createdBy: StringFilter
+    updatedOn: DateFilter
+    updatedBy: StringFilter
+    tags: MetaDataFilter
+    properties: MetaDataFilter
+}
+
+input ExperimentFilter {
+    name: StringFilter
+    projectId: IdFilter
+    projectName: StringFilter
     createdOn: DateFilter
     createdBy: StringFilter
     updatedOn: DateFilter
@@ -178,4 +214,5 @@ type Query {
     exportPlateListData(exportPlateDataOptions: ExportPlateDataOptions): [PlateDataRecord]
     exportWellData(exportWellDataOptions: ExportWellDataOptions): [WellDataRecord]
     projects(filter: ProjectFilter): [ProjectDTO]
+    experiments(filter: ExperimentFilter): [ExperimentDTO]
 }
