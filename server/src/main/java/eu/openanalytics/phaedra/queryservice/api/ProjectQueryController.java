@@ -33,83 +33,83 @@ public class ProjectQueryController {
     logger.info("Initial project result.size(): " + result.size());
     if (projectFilter != null) {
       logger.info("projectFilter is not null!!");
-      if (projectFilter.getName() != null) {
-        logger.info("projectFilter.getName() is not nul!!");
-        StringFilter filter = projectFilter.getName();
+      if (projectFilter.name() != null) {
+        logger.info("projectFilter.name() is not nul!!");
+        StringFilter filter = projectFilter.name();
         result = result.stream()
-            .filter(p -> StringUtils.isNotBlank(filter.startsWith) && p.getName().startsWith(filter.startsWith))
-            .filter(p -> StringUtils.isNotBlank(filter.endsWith) && p.getName().endsWith(filter.endsWith))
-            .filter(p -> StringUtils.isNotBlank(filter.contains) && p.getName().contains(filter.contains))
-            .filter(p -> StringUtils.isNotBlank(filter.regex) && p.getName().matches(filter.regex))
+            .filter(p -> StringUtils.isNotBlank(filter.startsWith()) && p.getName().startsWith(filter.startsWith()))
+            .filter(p -> StringUtils.isNotBlank(filter.endsWith()) && p.getName().endsWith(filter.endsWith()))
+            .filter(p -> StringUtils.isNotBlank(filter.contains()) && p.getName().contains(filter.contains()))
+            .filter(p -> StringUtils.isNotBlank(filter.regex()) && p.getName().matches(filter.regex()))
             .toList();
-        logger.info("After applying projectFilter.getName() filter result.size(): " + result.size());
+        logger.info("After applying projectFilter.name() filter result.size(): " + result.size());
       }
 
-      if (projectFilter.getCreatedBy() != null) {
-        logger.info("projectFilter.getCreatedBy() is not nul!!");
-        StringFilter filter = projectFilter.getCreatedBy();
+      if (projectFilter.createdBy() != null) {
+        logger.info("projectFilter.createdBy() is not nul!!");
+        StringFilter filter = projectFilter.createdBy();
         result = result.stream()
-            .filter(p -> StringUtils.isNotBlank(filter.startsWith) && p.getCreatedBy().startsWith(filter.startsWith))
-            .filter(p -> StringUtils.isNotBlank(filter.endsWith) && p.getCreatedBy().endsWith(filter.endsWith))
-            .filter(p -> StringUtils.isNotBlank(filter.contains) && p.getCreatedBy().contains(filter.contains))
-            .filter(p -> StringUtils.isNotBlank(filter.regex) && p.getCreatedBy().matches(filter.regex))
+            .filter(p -> StringUtils.isNotBlank(filter.startsWith()) && p.getCreatedBy().startsWith(filter.startsWith()))
+            .filter(p -> StringUtils.isNotBlank(filter.endsWith()) && p.getCreatedBy().endsWith(filter.endsWith()))
+            .filter(p -> StringUtils.isNotBlank(filter.contains()) && p.getCreatedBy().contains(filter.contains()))
+            .filter(p -> StringUtils.isNotBlank(filter.regex()) && p.getCreatedBy().matches(filter.regex()))
             .toList();
-        logger.info("After applying projectFilter.getCreatedBy() filter result.size(): " + result.size());
+        logger.info("After applying projectFilter.createdBy() filter result.size(): " + result.size());
       }
 
-      if (projectFilter.getUpdatedBy() != null) {
-        logger.info("projectFilter.getUpdatedBy() is not nul!!");
-        StringFilter filter = projectFilter.getUpdatedBy();
+      if (projectFilter.updatedBy() != null) {
+        logger.info("projectFilter.updatedBy() is not nul!!");
+        StringFilter filter = projectFilter.updatedBy();
         result = result.stream()
-            .filter(p -> StringUtils.isNotBlank(filter.startsWith) && p.getUpdatedBy().startsWith(filter.startsWith))
-            .filter(p -> StringUtils.isNotBlank(filter.endsWith) && p.getUpdatedBy().endsWith(filter.endsWith))
-            .filter(p -> StringUtils.isNotBlank(filter.contains) && p.getUpdatedBy().contains(filter.contains))
-            .filter(p -> StringUtils.isNotBlank(filter.regex) && p.getUpdatedBy().matches(filter.regex))
+            .filter(p -> StringUtils.isNotBlank(filter.startsWith()) && p.getUpdatedBy().startsWith(filter.startsWith()))
+            .filter(p -> StringUtils.isNotBlank(filter.endsWith()) && p.getUpdatedBy().endsWith(filter.endsWith()))
+            .filter(p -> StringUtils.isNotBlank(filter.contains()) && p.getUpdatedBy().contains(filter.contains()))
+            .filter(p -> StringUtils.isNotBlank(filter.regex()) && p.getUpdatedBy().matches(filter.regex()))
             .toList();
-        logger.info("After applying projectFilter.getUpdatedBy() filter result.size(): " + result.size());
+        logger.info("After applying projectFilter.updatedBy() filter result.size(): " + result.size());
       }
 
-      if (projectFilter.getCreatedOn() != null) {
-        logger.info("projectFilter.getCreatedOn() is not nul!!");
-        DateFilter filter = projectFilter.getCreatedOn();
+      if (projectFilter.createdOn() != null) {
+        logger.info("projectFilter.createdOn() is not nul!!");
+        DateFilter filter = projectFilter.createdOn();
         result = result.stream()
-            .filter(p -> filter.before != null && p.getCreatedOn().before(filter.before))
-            .filter(p -> filter.after != null && p.getCreatedOn().after(filter.after))
-            .filter(p -> filter.on != null && p.getCreatedOn().equals(filter.on))
+            .filter(p -> filter.before() != null && p.getCreatedOn().before(filter.before()))
+            .filter(p -> filter.after() != null && p.getCreatedOn().after(filter.after()))
+            .filter(p -> filter.on() != null && p.getCreatedOn().equals(filter.on()))
             .toList();
-        logger.info("After applying projectFilter.getCreatedOn() filter result.size(): " + result.size());
+        logger.info("After applying projectFilter.createdOn() filter result.size(): " + result.size());
       }
 
-      if (projectFilter.getUpdatedOn() != null) {
-        logger.info("projectFilter.getUpdatedOn() is not nul!!");
-        DateFilter filter = projectFilter.getUpdatedOn();
+      if (projectFilter.updatedOn() != null) {
+        logger.info("projectFilter.updatedOn() is not nul!!");
+        DateFilter filter = projectFilter.updatedOn();
         result = result.stream()
-            .filter(p -> filter.before != null && p.getUpdatedOn().before(filter.before))
-            .filter(p -> filter.after != null && p.getUpdatedOn().after(filter.after))
-            .filter(p -> filter.on != null && p.getUpdatedOn().equals(filter.on))
+            .filter(p -> filter.before() != null && p.getUpdatedOn().before(filter.before()))
+            .filter(p -> filter.after() != null && p.getUpdatedOn().after(filter.after()))
+            .filter(p -> filter.on() != null && p.getUpdatedOn().equals(filter.on()))
             .toList();
-        logger.info("After applying projectFilter.getUpdatedOn() filter result.size(): " + result.size());
+        logger.info("After applying projectFilter.updatedOn() filter result.size(): " + result.size());
       }
 
-      if (projectFilter.getTags() != null) {
-        logger.info("projectFilter.getTags() is not nul!!");
-        MetaDataFilter filter = projectFilter.getTags();
+      if (projectFilter.tags() != null) {
+        logger.info("projectFilter.tags() is not nul!!");
+        MetaDataFilter filter = projectFilter.tags();
         result = result.stream()
-            .filter(p -> CollectionUtils.isNotEmpty(filter.containsTags)
-                && p.getTags().containsAll(filter.containsTags))
+            .filter(p -> CollectionUtils.isNotEmpty(filter.containsTags())
+                && p.getTags().containsAll(filter.containsTags()))
             .toList();
-        logger.info("After applying projectFilter.getTags() filter result.size(): " + result.size());
+        logger.info("After applying projectFilter.tags() filter result.size(): " + result.size());
       }
 
-      if (projectFilter.getProperties() != null) {
-        logger.info("projectFilter.getProperties() is not nul!!");
-        MetaDataFilter filter = projectFilter.getProperties();
+      if (projectFilter.properties() != null) {
+        logger.info("projectFilter.properties() is not nul!!");
+        MetaDataFilter filter = projectFilter.properties();
         result = result.stream()
-            .filter(p -> CollectionUtils.isNotEmpty(filter.containsProperties)
+            .filter(p -> CollectionUtils.isNotEmpty(filter.containsProperties())
                 && p.getProperties().stream().map(prop -> prop.propertyName()).toList()
-                .containsAll(filter.containsProperties))
+                .containsAll(filter.containsProperties()))
             .toList();
-        logger.info("After applying projectFilter.getProperties() filter result.size(): " + result.size());
+        logger.info("After applying projectFilter.properties() filter result.size(): " + result.size());
       }
     }
     logger.info("After filtering result.size(): " + result.size());
