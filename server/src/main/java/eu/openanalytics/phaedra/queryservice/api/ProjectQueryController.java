@@ -2,10 +2,10 @@ package eu.openanalytics.phaedra.queryservice.api;
 
 import eu.openanalytics.phaedra.plateservice.client.PlateServiceClient;
 import eu.openanalytics.phaedra.plateservice.dto.ProjectDTO;
-import eu.openanalytics.phaedra.queryservice.dto.DateFilter;
-import eu.openanalytics.phaedra.queryservice.dto.MetaDataFilter;
-import eu.openanalytics.phaedra.queryservice.dto.ProjectFilter;
-import eu.openanalytics.phaedra.queryservice.dto.StringFilter;
+import eu.openanalytics.phaedra.queryservice.record.DateFilter;
+import eu.openanalytics.phaedra.queryservice.record.MetaDataFilter;
+import eu.openanalytics.phaedra.queryservice.record.ProjectFilter;
+import eu.openanalytics.phaedra.queryservice.record.StringFilter;
 import java.util.List;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;

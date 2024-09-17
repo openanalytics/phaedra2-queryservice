@@ -166,9 +166,7 @@ input MetaDataFilter {
 }
 
 input ProjectFilter {
-    id: ID
     name: StringFilter
-    description: StringFilter
     createdOn: DateFilter
     createdBy: StringFilter
     updatedOn: DateFilter
