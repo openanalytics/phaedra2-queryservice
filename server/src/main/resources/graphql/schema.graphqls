@@ -1,3 +1,4 @@
+# noinspection GraphQLTypeRedefinition
 scalar Date
 scalar FloatNaN
 
@@ -105,7 +106,76 @@ type WellDataRecord {
     features: [FeatureValueRecord],
 }
 
+#enum WellStatus {
+#    ACCEPTED_DEFAULT
+#    ACCEPTED
+#    REJECTED_PLATEPREP
+#    REJECTED_DATACAPTURE
+#    REJECTED_PHAEDRA
+#    REJECTED_OUTLIER_PHAEDRA_MANUAL
+#    REJECTED_OUTLIER_PHAEDRA_AUTO
+#}
+#
+#type WellDTO {
+#    id: ID
+#    plateId: ID
+#    row: Int
+#    column: Int
+#    wellNr: Int
+#    wellType: String
+#    status: WellStatus
+#    description: String
+#    wellSubstance: WellSubstanceDTO
+#    tags: [String]
+#}
+
+type PropertyDTO {
+    propertyName: String
+    propertyValue: String
+}
+
+type ProjectDTO {
+    id: ID!
+    name: String
+    description: String
+    createdOn: Date
+    createdBy: String
+    updatedOn: Date
+    updatedBy: String
+
+    tags: [String]
+    properties: [PropertyDTO]
+}
+
+input StringFilter {
+    startsWith: String
+    endsWith: String
+    contains: String
+    regex: String
+}
+
+input DateFilter {
+    before: Date
+    after: Date
+    on: Date
+}
+
+input MetaDataFilter {
+    includes: [String]
+}
+
+input ProjectFilter {
+    name: StringFilter
+    createdOn: DateFilter
+    createdBy: StringFilter
+    updatedOn: DateFilter
+    updatedBy: StringFilter
+    tags: MetaDataFilter
+    properties: MetaDataFilter
+}
+
 type Query {
     exportPlateListData(exportPlateDataOptions: ExportPlateDataOptions): [PlateDataRecord]
     exportWellData(exportWellDataOptions: ExportWellDataOptions): [WellDataRecord]
+    projects(filter: ProjectFilter): [ProjectDTO]
 }
