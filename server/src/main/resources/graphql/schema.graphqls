@@ -161,8 +161,7 @@ input DateFilter {
 }
 
 input MetaDataFilter {
-    containsTags: [String]
-    containsProperties: [String]
+    includes: [String]
 }
 
 input ProjectFilter {
