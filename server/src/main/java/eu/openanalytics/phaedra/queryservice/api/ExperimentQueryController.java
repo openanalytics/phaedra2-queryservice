@@ -32,9 +32,9 @@ public class ExperimentQueryController {
         else if (CollectionUtils.isNotEmpty(filter.in())) {
           for (Long projectId: filter.in())
             results.addAll(plateServiceClient.getExperiments(projectId));
-        } else {
-          results.addAll(plateServiceClient.getExperiments());
         }
+      } else {
+        results.addAll(plateServiceClient.getExperiments());
       }
 
       if (experimentFilter.name() != null) {
