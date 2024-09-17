@@ -7,6 +7,7 @@ import eu.openanalytics.phaedra.queryservice.dto.MetaDataFilter;
 import eu.openanalytics.phaedra.queryservice.dto.ProjectFilter;
 import eu.openanalytics.phaedra.queryservice.dto.StringFilter;
 import java.util.List;
+import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
 
@@ -20,7 +21,7 @@ public class ProjectQueryController {
   }
 
   @QueryMapping
-  public List<ProjectDTO> projects(ProjectFilter projectFilter) {
+  public List<ProjectDTO> projects(@Argument ProjectFilter projectFilter) {
     List<ProjectDTO> result = plateServiceClient.getProjects();
     if (projectFilter != null) {
       if (projectFilter.getName() != null) {
