@@ -6,11 +6,11 @@ import eu.openanalytics.phaedra.queryservice.record.DateFilter;
 import eu.openanalytics.phaedra.queryservice.record.MetaDataFilter;
 import eu.openanalytics.phaedra.queryservice.record.ProjectFilter;
 import eu.openanalytics.phaedra.queryservice.record.StringFilter;
+import java.util.Date;
 import java.util.List;
+import java.util.function.Function;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
@@ -19,8 +19,6 @@ import org.springframework.stereotype.Controller;
 public class ProjectQueryController {
 
   private final PlateServiceClient plateServiceClient;
-
-  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   public ProjectQueryController(PlateServiceClient plateServiceClient) {
     this.plateServiceClient = plateServiceClient;
@@ -31,70 +29,63 @@ public class ProjectQueryController {
     List<ProjectDTO> result = plateServiceClient.getProjects();
     if (projectFilter != null) {
       if (projectFilter.name() != null) {
-        StringFilter nameFilter = projectFilter.name();
-        result = result.stream()
-            .filter(p -> StringUtils.isBlank(nameFilter.startsWith()) || p.getName().startsWith(nameFilter.startsWith()))
-            .filter(p -> StringUtils.isBlank(nameFilter.endsWith()) || p.getName().endsWith(nameFilter.endsWith()))
-            .filter(p -> StringUtils.isBlank(nameFilter.contains()) || p.getName().contains(nameFilter.contains()))
-            .filter(p -> StringUtils.isBlank(nameFilter.regex()) || p.getName().matches(nameFilter.regex()))
-            .toList();
+        result = filterByString(result, projectFilter.name(), ProjectDTO::getName);
       }
-
       if (projectFilter.createdBy() != null) {
-        StringFilter createdByFilter = projectFilter.createdBy();
-        result = result.stream()
-            .filter(p -> StringUtils.isBlank(createdByFilter.startsWith()) || p.getCreatedBy().startsWith(createdByFilter.startsWith()))
-            .filter(p -> StringUtils.isBlank(createdByFilter.endsWith()) || p.getCreatedBy().endsWith(createdByFilter.endsWith()))
-            .filter(p -> StringUtils.isBlank(createdByFilter.contains()) || p.getCreatedBy().contains(createdByFilter.contains()))
-            .filter(p -> StringUtils.isBlank(createdByFilter.regex()) || p.getCreatedBy().matches(createdByFilter.regex()))
-            .toList();
+        result = filterByString(result, projectFilter.createdBy(), ProjectDTO::getCreatedBy);
       }
-
       if (projectFilter.updatedBy() != null) {
-        StringFilter updatedByFilter = projectFilter.updatedBy();
-        result = result.stream()
-            .filter(p -> StringUtils.isBlank(updatedByFilter.startsWith()) || p.getUpdatedBy().startsWith(updatedByFilter.startsWith()))
-            .filter(p -> StringUtils.isBlank(updatedByFilter.endsWith()) || p.getUpdatedBy().endsWith(updatedByFilter.endsWith()))
-            .filter(p -> StringUtils.isBlank(updatedByFilter.contains()) | p.getUpdatedBy().contains(updatedByFilter.contains()))
-            .filter(p -> StringUtils.isBlank(updatedByFilter.regex()) || p.getUpdatedBy().matches(updatedByFilter.regex()))
-            .toList();
+        result = filterByString(result, projectFilter.updatedBy(), ProjectDTO::getUpdatedBy);
       }
-
       if (projectFilter.createdOn() != null) {
-        DateFilter createdOnFilter = projectFilter.createdOn();
-        result = result.stream()
-            .filter(p -> createdOnFilter.before() == null || p.getCreatedOn().before(createdOnFilter.before()))
-            .filter(p -> createdOnFilter.after() == null || p.getCreatedOn().after(createdOnFilter.after()))
-            .filter(p -> createdOnFilter.on() == null | p.getCreatedOn().equals(createdOnFilter.on()))
-            .toList();
+        result = filterByDate(result, projectFilter.createdOn(), ProjectDTO::getCreatedOn);
       }
-
       if (projectFilter.updatedOn() != null) {
-        DateFilter updatedOnFilter = projectFilter.updatedOn();
-        result = result.stream()
-            .filter(p -> updatedOnFilter.before() == null || p.getUpdatedOn().before(updatedOnFilter.before()))
-            .filter(p -> updatedOnFilter.after() == null || p.getUpdatedOn().after(updatedOnFilter.after()))
-            .filter(p -> updatedOnFilter.on() == null || p.getUpdatedOn().equals(updatedOnFilter.on()))
-            .toList();
+        result = filterByDate(result, projectFilter.updatedOn(), ProjectDTO::getUpdatedOn);
       }
-
       if (projectFilter.tags() != null) {
-        MetaDataFilter tagFilter = projectFilter.tags();
-        result = result.stream()
-            .filter(p -> CollectionUtils.isEmpty(tagFilter.includes())
-                || p.getTags().containsAll(tagFilter.includes()))
-            .toList();
+        result = filterByMetaData(result, projectFilter.tags(), ProjectDTO::getTags);
       }
-
       if (projectFilter.properties() != null) {
-        MetaDataFilter propertiesFilter = projectFilter.properties();
-        result = result.stream()
-            .filter(p -> CollectionUtils.isEmpty(propertiesFilter.includes())
-                || p.getProperties().stream().map(prop -> prop.propertyName()).toList()
-                .containsAll(propertiesFilter.includes()))
-            .toList();
+        result = filterByMetaData(result, projectFilter.properties(),
+            projectDto -> projectDto.getProperties().stream().map(propertyDTO -> propertyDTO.propertyName())
+                .toList());
       }
     }
     return result;
+  }
+
+  private List<ProjectDTO> filterByString(List<ProjectDTO> result, StringFilter stringFilter,
+      Function<ProjectDTO, String> getStringFunction) {
+    return result.stream()
+        .filter(p -> StringUtils.isBlank(stringFilter.startsWith())
+            || getStringFunction.apply(p).startsWith(stringFilter.startsWith()))
+        .filter(p -> StringUtils.isBlank(stringFilter.endsWith())
+            || getStringFunction.apply(p).endsWith(stringFilter.endsWith()))
+        .filter(p -> StringUtils.isBlank(stringFilter.contains())
+            || getStringFunction.apply(p).contains(stringFilter.contains()))
+        .filter(p -> StringUtils.isBlank(stringFilter.regex())
+            || getStringFunction.apply(p).matches(stringFilter.regex()))
+        .toList();
+  }
+
+  private List<ProjectDTO> filterByDate(List<ProjectDTO> result, DateFilter dateFilter,
+      Function<ProjectDTO, Date> getDateFunction) {
+    return result.stream()
+        .filter(p -> dateFilter.before() == null
+            || getDateFunction.apply(p).before(dateFilter.before()))
+        .filter(p -> dateFilter.after() == null
+            || getDateFunction.apply(p).after(dateFilter.after()))
+        .filter(p -> dateFilter.on() == null
+            || getDateFunction.apply(p).equals(dateFilter.on()))
+        .toList();
+  }
+
+  private List<ProjectDTO> filterByMetaData(List<ProjectDTO> result, MetaDataFilter metaDataFilter,
+      Function<ProjectDTO, List<String>> getListStringFunction) {
+    return result.stream()
+        .filter(p -> CollectionUtils.isEmpty(metaDataFilter.includes())
+            || getListStringFunction.apply(p).containsAll(metaDataFilter.includes()))
+        .toList();
   }
 }
