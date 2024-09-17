@@ -130,8 +130,8 @@ type WellDataRecord {
 #}
 
 type PropertyDTO {
-    name: String!
-    value: String
+    propertyName: String
+    propertyValue: String
 }
 
 type ProjectDTO {
