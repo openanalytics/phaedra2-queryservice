@@ -106,18 +106,28 @@ type WellDataRecord {
     features: [FeatureValueRecord],
 }
 
-type WellRecord {
-    id: ID
-    plateId: ID
-    row: Int
-    column: Int
-    wellNr: Int
-    wellType: String
-    status: WellStatus
-    description: String
-    wellSubstance: WellSubstanceDTO
-    tags: [String]
-}
+#enum WellStatus {
+#    ACCEPTED_DEFAULT
+#    ACCEPTED
+#    REJECTED_PLATEPREP
+#    REJECTED_DATACAPTURE
+#    REJECTED_PHAEDRA
+#    REJECTED_OUTLIER_PHAEDRA_MANUAL
+#    REJECTED_OUTLIER_PHAEDRA_AUTO
+#}
+#
+#type WellDTO {
+#    id: ID
+#    plateId: ID
+#    row: Int
+#    column: Int
+#    wellNr: Int
+#    wellType: String
+#    status: WellStatus
+#    description: String
+#    wellSubstance: WellSubstanceDTO
+#    tags: [String]
+#}
 
 type PropertyDTO {
     name: String!
