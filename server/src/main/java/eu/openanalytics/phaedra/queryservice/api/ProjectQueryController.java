@@ -7,6 +7,7 @@ import eu.openanalytics.phaedra.queryservice.dto.MetaDataFilter;
 import eu.openanalytics.phaedra.queryservice.dto.ProjectFilter;
 import eu.openanalytics.phaedra.queryservice.dto.StringFilter;
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
@@ -27,30 +28,30 @@ public class ProjectQueryController {
       if (projectFilter.getName() != null) {
         StringFilter filter = projectFilter.getName();
         result = result.stream()
-            .filter(p -> filter.startsWith != null && p.getName().startsWith(filter.startsWith))
-            .filter(p -> filter.endsWith != null && p.getName().endsWith(filter.endsWith))
-            .filter(p -> filter.contains != null && p.getName().contains(filter.contains))
-            .filter(p -> filter.regex != null && p.getName().matches(filter.regex))
+            .filter(p -> StringUtils.isNotBlank(filter.startsWith) && p.getName().startsWith(filter.startsWith))
+            .filter(p -> StringUtils.isNotBlank(filter.endsWith) && p.getName().endsWith(filter.endsWith))
+            .filter(p -> StringUtils.isNotBlank(filter.contains) && p.getName().contains(filter.contains))
+            .filter(p -> StringUtils.isNotBlank(filter.regex) && p.getName().matches(filter.regex))
             .toList();
       }
 
       if (projectFilter.getCreatedBy() != null) {
         StringFilter filter = projectFilter.getCreatedBy();
         result = result.stream()
-            .filter(p -> filter.startsWith != null && p.getCreatedBy().startsWith(filter.startsWith))
-            .filter(p -> filter.endsWith != null && p.getCreatedBy().endsWith(filter.endsWith))
-            .filter(p -> filter.contains != null && p.getCreatedBy().contains(filter.contains))
-            .filter(p -> filter.regex != null && p.getCreatedBy().matches(filter.regex))
+            .filter(p -> StringUtils.isNotBlank(filter.startsWith) && p.getCreatedBy().startsWith(filter.startsWith))
+            .filter(p -> StringUtils.isNotBlank(filter.endsWith) && p.getCreatedBy().endsWith(filter.endsWith))
+            .filter(p -> StringUtils.isNotBlank(filter.contains) && p.getCreatedBy().contains(filter.contains))
+            .filter(p -> StringUtils.isNotBlank(filter.regex) && p.getCreatedBy().matches(filter.regex))
             .toList();
       }
 
       if (projectFilter.getUpdatedBy() != null) {
         StringFilter filter = projectFilter.getUpdatedBy();
         result = result.stream()
-            .filter(p -> filter.startsWith != null && p.getUpdatedBy().startsWith(filter.startsWith))
-            .filter(p -> filter.endsWith != null && p.getUpdatedBy().endsWith(filter.endsWith))
-            .filter(p -> filter.contains != null && p.getUpdatedBy().contains(filter.contains))
-            .filter(p -> filter.regex != null && p.getUpdatedBy().matches(filter.regex))
+            .filter(p -> StringUtils.isNotBlank(filter.startsWith) && p.getUpdatedBy().startsWith(filter.startsWith))
+            .filter(p -> StringUtils.isNotBlank(filter.endsWith) && p.getUpdatedBy().endsWith(filter.endsWith))
+            .filter(p -> StringUtils.isNotBlank(filter.contains) && p.getUpdatedBy().contains(filter.contains))
+            .filter(p -> StringUtils.isNotBlank(filter.regex) && p.getUpdatedBy().matches(filter.regex))
             .toList();
       }
 
