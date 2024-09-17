@@ -1,3 +1,4 @@
+# noinspection GraphQLTypeRedefinition
 scalar Date
 scalar FloatNaN
 
@@ -118,12 +119,12 @@ type WellRecord {
     tags: [String]
 }
 
-type PropertyRecord {
+type PropertyDTO {
     name: String!
     value: String
 }
 
-type ProjectRecord {
+type ProjectDTO {
     id: ID!
     name: String
     description: String
@@ -133,7 +134,7 @@ type ProjectRecord {
     updatedBy: String
 
     tags: [String]
-    properties: [PropertyRecord]
+    properties: [PropertyDTO]
 }
 
 input StringFilter {
@@ -169,5 +170,5 @@ input ProjectFilter {
 type Query {
     exportPlateListData(exportPlateDataOptions: ExportPlateDataOptions): [PlateDataRecord]
     exportWellData(exportWellDataOptions: ExportWellDataOptions): [WellDataRecord]
-    projects(filter: ProjectFilter): [ProjectRecord]
+    projects(filter: ProjectFilter): [ProjectDTO]
 }
