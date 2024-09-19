@@ -14,9 +14,6 @@
 
   <properties>
     <docker.imageName>openanalytics/${project.parent.artifactId}</docker.imageName>
-    <phaedra2-plateservice-client.version>2.2.0-SNAPSHOT</phaedra2-plateservice-client.version>
-    <phaedra2-protocolservice-client.version>2.2.0-SNAPSHOT</phaedra2-protocolservice-client.version>
-    <phaedra2-resultdataservice-client.version>2.2.0-SNAPSHOT</phaedra2-resultdataservice-client.version>
   </properties>
 
   <dependencies>
@@ -25,23 +22,6 @@
       <groupId>eu.openanalytics.phaedra</groupId>
       <artifactId>phaedra2-queryservice-dto</artifactId>
       <version>2.2.0-SNAPSHOT</version>
-    </dependency>
-
-    <!-- Phaedra dependencies -->
-    <dependency>
-      <groupId>eu.openanalytics.phaedra</groupId>
-      <artifactId>phaedra2-resultdataservice-client</artifactId>
-      <version>${phaedra2-resultdataservice-client.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>eu.openanalytics.phaedra</groupId>
-      <artifactId>phaedra2-protocolservice-client</artifactId>
-      <version>${phaedra2-protocolservice-client.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>eu.openanalytics.phaedra</groupId>
-      <artifactId>phaedra2-plateservice-client</artifactId>
-      <version>${phaedra2-plateservice-client.version}</version>
     </dependency>
 
     <!-- Spring Cloud dependencies -->

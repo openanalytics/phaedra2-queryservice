@@ -16,6 +16,8 @@ public class FilterUtils {
   public static <T> List<T> filterByString(List<T> result, StringFilter stringFilter,
       Function<T, String> getStringFunction) {
     return result.stream()
+        .filter(e -> StringUtils.isBlank(stringFilter.equals())
+            || getStringFunction.apply(e).equals(stringFilter.equals()))
         .filter(e -> StringUtils.isBlank(stringFilter.startsWith())
             || getStringFunction.apply(e).startsWith(stringFilter.startsWith()))
         .filter(e -> StringUtils.isBlank(stringFilter.endsWith())
