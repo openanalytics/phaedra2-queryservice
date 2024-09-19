@@ -166,7 +166,85 @@ type ExperimentDTO {
     properties: [PropertyDTO]
 }
 
+enum LinkStatus {
+    NOT_LINKED
+    LINKED
+}
+
+enum CalculationStatus {
+    CALCULATION_NEEDED
+    CALCULATION_OK
+    CALCULATION_IN_PROGRESS
+    CALCULATION_NOT_POSSIBLE
+    CALCULATION_ERROR
+}
+
+enum ValidationStatus {
+    VALIDATION_NOT_SET
+    VALIDATION_NOT_NEEDED
+    VALIDATED
+    INVALIDATED
+}
+
+enum ApprovalStatus {
+    APPROVAL_NOT_SET
+    APPROVAL_NOT_NEEDED
+    APPROVED
+    DISAPPROVED
+}
+
+enum UploadStatus {
+    UPLOAD_NOT_SET
+    UPLOAD_NOT_NEEDED
+    UPLOADED
+}
+
+type PlateDTO {
+    id: ID
+    barcode: String
+    description: String
+    experimentId: Int
+
+    rows: Int
+    columns: Int
+    sequence: Int
+
+    linkStatus: LinkStatus
+    linkSource: String
+    linkTemplateId: String
+    linkTemplateName: String
+    linkedOn: Date
+
+    calculationStatus: CalculationStatus
+    calculationError: String
+    calculatedBy: String
+    calculatedOn: Date
+
+    validationStatus: ValidationStatus
+    validatedBy: String
+    validatedOn: Date
+    invalidatedReason: String
+
+    approvalStatus: ApprovalStatus
+    approvedBy: String
+    approvedOn: Date
+    disapprovedReason: String
+
+    uploadStatus: UploadStatus
+    uploadedBy: String
+    uploadedOn: Date
+
+    createdOn: Date
+    createdBy: String
+    updatedOn: Date
+    updatedBy: String
+
+    tags: [String]
+    properties: [PropertyDTO]
+}
+
 input StringFilter {
+    equals: String
     startsWith: String
     endsWith: String
     contains: String
@@ -189,23 +267,59 @@ input IdFilter {
 }
 
 input ProjectFilter {
+    id: IdFilter
     name: StringFilter
+
     createdOn: DateFilter
     createdBy: StringFilter
     updatedOn: DateFilter
     updatedBy: StringFilter
+
     tags: MetaDataFilter
     properties: MetaDataFilter
 }
 
 input ExperimentFilter {
+    id: IdFilter
     name: StringFilter
     projectId: IdFilter
     projectName: StringFilter
+
     createdOn: DateFilter
     createdBy: StringFilter
     updatedOn: DateFilter
     updatedBy: StringFilter
+
+    tags: MetaDataFilter
+    properties: MetaDataFilter
+}
+
+input PlateFilter {
+    id: IdFilter
+    barcode: StringFilter
+    experimentId: IdFilter
+
+    calculationStatus: CalculationStatus
+    calculatedBy: StringFilter
+    calculatedOn: DateFilter
+
+    validationStatus: ValidationStatus
+    validatedBy: StringFilter
+    validatedOn: DateFilter
+
+    approvalStatus: ApprovalStatus
+    approvedBy: StringFilter
+    approvedOn: DateFilter
+
+    uploadStatus: UploadStatus
+    uploadedBy: StringFilter
+    uploadedOn: DateFilter
+
+    createdOn: DateFilter
+    createdBy: StringFilter
+    updatedOn: DateFilter
+    updatedBy: StringFilter
+
     tags: MetaDataFilter
     properties: MetaDataFilter
 }
@@ -215,4 +329,5 @@ type Query {
     exportWellData(exportWellDataOptions: ExportWellDataOptions): [WellDataRecord]
     projects(filter: ProjectFilter): [ProjectDTO]
     experiments(filter: ExperimentFilter): [ExperimentDTO]
+    plates(filter: PlateFilter): [PlateDTO]
 }
