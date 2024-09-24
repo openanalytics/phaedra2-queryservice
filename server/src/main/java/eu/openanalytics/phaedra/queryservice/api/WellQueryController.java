@@ -50,7 +50,6 @@ public class WellQueryController {
       }
     }
 
-
     return results;
   }
 
