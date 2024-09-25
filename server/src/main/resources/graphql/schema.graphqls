@@ -230,6 +230,14 @@ enum WellStatus {
     REJECTED_OUTLIER_PHAEDRA_AUTO
 }
 
+type WellSubstanceDTO {
+    id: ID
+    wellId: ID
+    type: String
+    name: String
+    concentration: Float
+}
+
 type WellDTO {
     id: ID
     plateId: ID
