@@ -106,29 +106,6 @@ type WellDataRecord {
     features: [FeatureValueRecord],
 }
 
-#enum WellStatus {
-#    ACCEPTED_DEFAULT
-#    ACCEPTED
-#    REJECTED_PLATEPREP
-#    REJECTED_DATACAPTURE
-#    REJECTED_PHAEDRA
-#    REJECTED_OUTLIER_PHAEDRA_MANUAL
-#    REJECTED_OUTLIER_PHAEDRA_AUTO
-#}
-#
-#type WellDTO {
-#    id: ID
-#    plateId: ID
-#    row: Int
-#    column: Int
-#    wellNr: Int
-#    wellType: String
-#    status: WellStatus
-#    description: String
-#    wellSubstance: WellSubstanceDTO
-#    tags: [String]
-#}
-
 type PropertyDTO {
     propertyName: String
     propertyValue: String
@@ -243,6 +220,38 @@ type PlateDTO {
     properties: [PropertyDTO]
 }
 
+enum WellStatus {
+    ACCEPTED_DEFAULT
+    ACCEPTED
+    REJECTED_PLATEPREP
+    REJECTED_DATACAPTURE
+    REJECTED_PHAEDRA
+    REJECTED_OUTLIER_PHAEDRA_MANUAL
+    REJECTED_OUTLIER_PHAEDRA_AUTO
+}
+
+type WellSubstanceDTO {
+    id: ID
+    wellId: ID
+    type: String
+    name: String
+    concentration: Float
+}
+
+type WellDTO {
+    id: ID
+    plateId: ID
+    row: Int
+    column: Int
+    wellNr: Int
+    wellType: String
+    status: WellStatus
+    description: String
+    wellSubstance: WellSubstanceDTO
+    tags: [String]
+    properties: [PropertyDTO]
+}
+
 input StringFilter {
     equals: String
     startsWith: String
@@ -324,10 +333,23 @@ input PlateFilter {
     properties: MetaDataFilter
 }
 
+input WellFilter {
+    id: IdFilter
+    plateId: IdFilter
+    experimentId: IdFilter
+    projectId: IdFilter
+    wellType: StringFilter
+    status: WellStatus
+    wellSubstance: StringFilter
+    tags: MetaDataFilter
+    properties: MetaDataFilter
+}
+
 type Query {
     exportPlateListData(exportPlateDataOptions: ExportPlateDataOptions): [PlateDataRecord]
     exportWellData(exportWellDataOptions: ExportWellDataOptions): [WellDataRecord]
     projects(filter: ProjectFilter): [ProjectDTO]
     experiments(filter: ExperimentFilter): [ExperimentDTO]
     plates(filter: PlateFilter): [PlateDTO]
+    wells(filter: WellFilter): [WellDTO]
 }
