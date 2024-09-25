@@ -36,7 +36,7 @@ public class WellQueryController {
       if (wellFilter.plateId() != null) {
         if (wellFilter.plateId().equals() != null) {
           results.addAll(plateServiceGraphQLClient.getWellsByPlateId(wellFilter.plateId().equals()));
-        } else if (wellFilter.id().in() != null) {
+        } else if (wellFilter.plateId().in() != null) {
           results.addAll(plateServiceGraphQLClient.getWellsByPlateIds(wellFilter.plateId().in()));
         }
       }
@@ -44,7 +44,7 @@ public class WellQueryController {
       if (wellFilter.experimentId() != null) {
         if (wellFilter.experimentId().equals() != null) {
           results.addAll(plateServiceGraphQLClient.getWellsByExperimentId(wellFilter.experimentId().equals()));
-        } else if (wellFilter.id().in() != null) {
+        } else if (wellFilter.experimentId().in() != null) {
           results.addAll(plateServiceGraphQLClient.getWellsByExperimentIds(wellFilter.experimentId().in()));
         }
       }
