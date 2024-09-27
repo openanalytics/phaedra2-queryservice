@@ -230,6 +230,12 @@ enum WellStatus {
     REJECTED_OUTLIER_PHAEDRA_AUTO
 }
 
+enum StatusCode {
+    SCHEDULED
+    SUCCESS
+    FAILURE
+}
+
 type WellSubstanceDTO {
     id: ID
     wellId: ID
@@ -250,6 +256,38 @@ type WellDTO {
     wellSubstance: WellSubstanceDTO
     tags: [String]
     properties: [PropertyDTO]
+}
+
+type ErrorDTO {
+    timestamp: Date
+    exceptionClassName: String
+    exceptionMessage: String
+    description: String
+    featureId: ID
+    featureName: String
+    sequenceNumber: Int
+    formulaId: ID
+    formulaName: String
+    civType: String
+    civVariableName: String
+    civSource: String
+    exitCode: Int
+    statusMessage: String
+    featureStatId: ID
+    featureStatName: String
+    newResultSetId: ID
+}
+
+type ResultSetDTO {
+    id: ID
+    protocolId: ID
+    plateId: ID
+    measId: ID
+    executionStartTimeStamp: Date
+    executionEndTimeStamp: Date
+    outcome: StatusCode
+    errors: [ErrorDTO]
+    errorsText: String
 }
 
 input StringFilter {
