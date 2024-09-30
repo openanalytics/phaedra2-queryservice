@@ -5,19 +5,44 @@
     <parent>
         <groupId>eu.openanalytics.phaedra</groupId>
         <artifactId>phaedra2-parent</artifactId>
-        <version>2.1.0</version>
+        <version>2.2.0</version>
     </parent>
     <packaging>pom</packaging>
 
     <artifactId>phaedra2-queryservice</artifactId>
     <name>phaedra2-queryservice</name>
-    <version>2.1.0</version>
+    <version>2.2.0</version>
 
     <modules>
         <module>dto/</module>
         <module>client/</module>
         <module>server/</module>
     </modules>
+
+    <properties>
+        <phaedra2-plateservice-client.version>2.2.0</phaedra2-plateservice-client.version>
+        <phaedra2-protocolservice-client.version>2.2.0</phaedra2-protocolservice-client.version>
+        <phaedra2-resultdataservice-client.version>2.2.0</phaedra2-resultdataservice-client.version>
+    </properties>
+
+    <dependencies>
+        <!-- Phaedra dependencies -->
+        <dependency>
+            <groupId>eu.openanalytics.phaedra</groupId>
+            <artifactId>phaedra2-resultdataservice-client</artifactId>
+            <version>${phaedra2-resultdataservice-client.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>eu.openanalytics.phaedra</groupId>
+            <artifactId>phaedra2-protocolservice-client</artifactId>
+            <version>${phaedra2-protocolservice-client.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>eu.openanalytics.phaedra</groupId>
+            <artifactId>phaedra2-plateservice-client</artifactId>
+            <version>${phaedra2-plateservice-client.version}</version>
+        </dependency>
+    </dependencies>
 
     <build>
         <plugins>

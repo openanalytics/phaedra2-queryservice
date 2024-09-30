@@ -1,3 +1,4 @@
+# noinspection GraphQLTypeRedefinition
 scalar Date
 scalar FloatNaN
 
@@ -105,7 +106,250 @@ type WellDataRecord {
     features: [FeatureValueRecord],
 }
 
+type PropertyDTO {
+    propertyName: String
+    propertyValue: String
+}
+
+type ProjectDTO {
+    id: ID!
+    name: String
+    description: String
+
+    createdOn: Date
+    createdBy: String
+    updatedOn: Date
+    updatedBy: String
+
+    tags: [String]
+    properties: [PropertyDTO]
+}
+
+type ExperimentDTO {
+    id: ID
+    name: String
+    description: String
+    status: String
+    projectId: ID
+    multiploMethod: String
+    multiploParameter: String
+
+    createdOn: Date
+    createdBy: String
+    updatedOn: Date
+    updatedBy: String
+
+    tags: [String]
+    properties: [PropertyDTO]
+}
+
+enum LinkStatus {
+    NOT_LINKED
+    LINKED
+}
+
+enum CalculationStatus {
+    CALCULATION_NEEDED
+    CALCULATION_OK
+    CALCULATION_IN_PROGRESS
+    CALCULATION_NOT_POSSIBLE
+    CALCULATION_ERROR
+}
+
+enum ValidationStatus {
+    VALIDATION_NOT_SET
+    VALIDATION_NOT_NEEDED
+    VALIDATED
+    INVALIDATED
+}
+
+enum ApprovalStatus {
+    APPROVAL_NOT_SET
+    APPROVAL_NOT_NEEDED
+    APPROVED
+    DISAPPROVED
+}
+
+enum UploadStatus {
+    UPLOAD_NOT_SET
+    UPLOAD_NOT_NEEDED
+    UPLOADED
+}
+
+type PlateDTO {
+    id: ID
+    barcode: String
+    description: String
+    experimentId: Int
+
+    rows: Int
+    columns: Int
+    sequence: Int
+
+    linkStatus: LinkStatus
+    linkSource: String
+    linkTemplateId: String
+    linkTemplateName: String
+    linkedOn: Date
+
+    calculationStatus: CalculationStatus
+    calculationError: String
+    calculatedBy: String
+    calculatedOn: Date
+
+    validationStatus: ValidationStatus
+    validatedBy: String
+    validatedOn: Date
+    invalidatedReason: String
+
+    approvalStatus: ApprovalStatus
+    approvedBy: String
+    approvedOn: Date
+    disapprovedReason: String
+
+    uploadStatus: UploadStatus
+    uploadedBy: String
+    uploadedOn: Date
+
+    createdOn: Date
+    createdBy: String
+    updatedOn: Date
+    updatedBy: String
+
+    tags: [String]
+    properties: [PropertyDTO]
+}
+
+enum WellStatus {
+    ACCEPTED_DEFAULT
+    ACCEPTED
+    REJECTED_PLATEPREP
+    REJECTED_DATACAPTURE
+    REJECTED_PHAEDRA
+    REJECTED_OUTLIER_PHAEDRA_MANUAL
+    REJECTED_OUTLIER_PHAEDRA_AUTO
+}
+
+type WellSubstanceDTO {
+    id: ID
+    wellId: ID
+    type: String
+    name: String
+    concentration: Float
+}
+
+type WellDTO {
+    id: ID
+    plateId: ID
+    row: Int
+    column: Int
+    wellNr: Int
+    wellType: String
+    status: WellStatus
+    description: String
+    wellSubstance: WellSubstanceDTO
+    tags: [String]
+    properties: [PropertyDTO]
+}
+
+input StringFilter {
+    equals: String
+    startsWith: String
+    endsWith: String
+    contains: String
+    regex: String
+}
+
+input DateFilter {
+    before: Date
+    after: Date
+    on: Date
+}
+
+input MetaDataFilter {
+    includes: [String]
+}
+
+input IdFilter {
+    equals: ID
+    in: [ID]
+}
+
+input ProjectFilter {
+    id: IdFilter
+    name: StringFilter
+
+    createdOn: DateFilter
+    createdBy: StringFilter
+    updatedOn: DateFilter
+    updatedBy: StringFilter
+
+    tags: MetaDataFilter
+    properties: MetaDataFilter
+}
+
+input ExperimentFilter {
+    id: IdFilter
+    name: StringFilter
+    projectId: IdFilter
+    projectName: StringFilter
+
+    createdOn: DateFilter
+    createdBy: StringFilter
+    updatedOn: DateFilter
+    updatedBy: StringFilter
+
+    tags: MetaDataFilter
+    properties: MetaDataFilter
+}
+
+input PlateFilter {
+    id: IdFilter
+    barcode: StringFilter
+    experimentId: IdFilter
+
+    calculationStatus: CalculationStatus
+    calculatedBy: StringFilter
+    calculatedOn: DateFilter
+
+    validationStatus: ValidationStatus
+    validatedBy: StringFilter
+    validatedOn: DateFilter
+
+    approvalStatus: ApprovalStatus
+    approvedBy: StringFilter
+    approvedOn: DateFilter
+
+    uploadStatus: UploadStatus
+    uploadedBy: StringFilter
+    uploadedOn: DateFilter
+
+    createdOn: DateFilter
+    createdBy: StringFilter
+    updatedOn: DateFilter
+    updatedBy: StringFilter
+
+    tags: MetaDataFilter
+    properties: MetaDataFilter
+}
+
+input WellFilter {
+    id: IdFilter
+    plateId: IdFilter
+    experimentId: IdFilter
+    projectId: IdFilter
+    wellType: StringFilter
+    status: WellStatus
+    wellSubstance: StringFilter
+    tags: MetaDataFilter
+    properties: MetaDataFilter
+}
+
 type Query {
     exportPlateListData(exportPlateDataOptions: ExportPlateDataOptions): [PlateDataRecord]
     exportWellData(exportWellDataOptions: ExportWellDataOptions): [WellDataRecord]
+    projects(filter: ProjectFilter): [ProjectDTO]
+    experiments(filter: ExperimentFilter): [ExperimentDTO]
+    plates(filter: PlateFilter): [PlateDTO]
+    wells(filter: WellFilter): [WellDTO]
 }

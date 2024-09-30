@@ -3,45 +3,25 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-      <groupId>eu.openanalytics.phaedra</groupId>
-      <artifactId>phaedra2-queryservice</artifactId>
-      <version>2.1.0</version>
-    </parent>
+  <parent>
+    <groupId>eu.openanalytics.phaedra</groupId>
+    <artifactId>phaedra2-queryservice</artifactId>
+    <version>2.2.0</version>
+  </parent>
 
-    <artifactId>phaedra2-queryservice-server</artifactId>
-    <name>phaedra2-queryservice-server</name>
+  <artifactId>phaedra2-queryservice-server</artifactId>
+  <name>phaedra2-queryservice-server</name>
 
-    <properties>
-        <docker.imageName>openanalytics/${project.parent.artifactId}</docker.imageName>
-        <phaedra2-plateservice-client.version>2.1.0</phaedra2-plateservice-client.version>
-        <phaedra2-protocolservice-client.version>2.1.0</phaedra2-protocolservice-client.version>
-        <phaedra2-resultdataservice-client.version>2.1.0</phaedra2-resultdataservice-client.version>
-    </properties>
+  <properties>
+    <docker.imageName>openanalytics/${project.parent.artifactId}</docker.imageName>
+  </properties>
 
-    <dependencies>
-        <!-- Dependency on DTO -->
-        <dependency>
-            <groupId>eu.openanalytics.phaedra</groupId>
-            <artifactId>phaedra2-queryservice-dto</artifactId>
-            <version>2.1.0</version>
-        </dependency>
-
-    <!-- Phaedra dependencies -->
+  <dependencies>
+    <!-- Dependency on DTO -->
     <dependency>
       <groupId>eu.openanalytics.phaedra</groupId>
-      <artifactId>phaedra2-resultdataservice-client</artifactId>
-      <version>${phaedra2-resultdataservice-client.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>eu.openanalytics.phaedra</groupId>
-      <artifactId>phaedra2-protocolservice-client</artifactId>
-      <version>${phaedra2-protocolservice-client.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>eu.openanalytics.phaedra</groupId>
-      <artifactId>phaedra2-plateservice-client</artifactId>
-      <version>${phaedra2-plateservice-client.version}</version>
+      <artifactId>phaedra2-queryservice-dto</artifactId>
+      <version>2.2.0</version>
     </dependency>
 
     <!-- Spring Cloud dependencies -->
