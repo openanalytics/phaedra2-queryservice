@@ -4,6 +4,7 @@ import eu.openanalytics.phaedra.queryservice.record.DateFilter;
 import eu.openanalytics.phaedra.queryservice.record.MetaDataFilter;
 import eu.openanalytics.phaedra.queryservice.record.StringFilter;
 
+import java.util.HashSet;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -17,15 +18,16 @@ public class FilterUtils {
       Function<T, String> getStringFunction) {
     return result.stream()
         .filter(e -> StringUtils.isBlank(stringFilter.equals())
-            || getStringFunction.apply(e).equals(stringFilter.equals()))
+            || StringUtils.equals(getStringFunction.apply(e), stringFilter.equals()))
         .filter(e -> StringUtils.isBlank(stringFilter.startsWith())
-            || getStringFunction.apply(e).startsWith(stringFilter.startsWith()))
+            || StringUtils.startsWith(getStringFunction.apply(e), stringFilter.startsWith()))
         .filter(e -> StringUtils.isBlank(stringFilter.endsWith())
-            || getStringFunction.apply(e).endsWith(stringFilter.endsWith()))
+            || StringUtils.endsWith(getStringFunction.apply(e), stringFilter.endsWith()))
         .filter(e -> StringUtils.isBlank(stringFilter.contains())
-            || getStringFunction.apply(e).contains(stringFilter.contains()))
+            || StringUtils.contains(getStringFunction.apply(e), stringFilter.contains()))
         .filter(e -> StringUtils.isBlank(stringFilter.regex())
-            || getStringFunction.apply(e).matches(stringFilter.regex()))
+            || (StringUtils.isNotBlank(getStringFunction.apply(e))
+            && getStringFunction.apply(e).matches(stringFilter.regex())))
         .toList();
   }
 
@@ -42,7 +44,7 @@ public class FilterUtils {
       Function<T, List<String>> getListStringFunction) {
     return result.stream()
         .filter(p -> CollectionUtils.isEmpty(metaDataFilter.includes())
-            || getListStringFunction.apply(p).containsAll(metaDataFilter.includes()))
+            || new HashSet<>(getListStringFunction.apply(p)).containsAll(metaDataFilter.includes()))
         .toList();
   }
 }
