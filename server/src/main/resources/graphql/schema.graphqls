@@ -383,11 +383,29 @@ input WellFilter {
     properties: MetaDataFilter
 }
 
+input ResultSetFilter {
+    id: IdFilter
+    protocolId: IdFilter
+    plateId: IdFilter
+    measId: IdFilter
+    executionStartTimeStamp: DateFilter
+    executionEndTimeStamp: DateFilter
+    outcome: StatusCode
+}
+
 type Query {
+    # Retrieve a plate data list for export that match the export plate data options
     exportPlateListData(exportPlateDataOptions: ExportPlateDataOptions): [PlateDataRecord]
+    # Retrieve a well data list for export that match the export well data options
     exportWellData(exportWellDataOptions: ExportWellDataOptions): [WellDataRecord]
+    # Get a filtered list of projects that match the conditions provided by the filter input
     projects(filter: ProjectFilter): [ProjectDTO]
+    # Get a filtered list of experiments that match the conditions provided by the filter input
     experiments(filter: ExperimentFilter): [ExperimentDTO]
+    # Get a filtered list of plates that match the conditions provided by the filter input
     plates(filter: PlateFilter): [PlateDTO]
+    # Get a filtered list of wells that match the conditions provided by the filter input
     wells(filter: WellFilter): [WellDTO]
+    # Get a filtered list of results set that match the conditions provided by the filter input
+    resultSets(filter: ResultSetFilter): [ResultSetDTO]
 }
