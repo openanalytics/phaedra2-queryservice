@@ -23,6 +23,8 @@ package eu.openanalytics.phaedra.queryservice.api;
 import eu.openanalytics.phaedra.queryservice.record.ResultSetFilter;
 import eu.openanalytics.phaedra.resultdataservice.client.ResultDataServiceGraphQLClient;
 import eu.openanalytics.phaedra.resultdataservice.dto.ResultSetDTO;
+import eu.openanalytics.phaedra.resultdataservice.enumeration.StatusCode;
+import java.util.ArrayList;
 import java.util.List;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -40,45 +42,57 @@ public class ResultSetQueryController {
   @QueryMapping
   public List<ResultSetDTO> resultSets(@Argument ResultSetFilter filter) {
     if (filter != null) {
+      List<Long> resultSetIds = new ArrayList<>();
+      List<Long> plateIds = new ArrayList<>();
+      List<Long> measurementIds = new ArrayList<>();
+      List<Long> protocolIds = new ArrayList<>();
+      List<StatusCode> status = new ArrayList<>();
+
       if (filter.id() != null) {
         if (filter.id().equals() != null) {
-          return List.of(resultDataServiceGraphQLClient.getResultSet(filter.id().equals()));
+          resultSetIds.add(filter.id().equals());
+        }
+        if (filter.id().in() != null) {
+          resultSetIds.addAll(filter.id().in());
         }
       }
+
       if (filter.plateId() != null) {
         if (filter.plateId().equals() != null) {
-          return resultDataServiceGraphQLClient.getResultSetsByPlateId(filter.plateId().equals());
+          plateIds.add(filter.plateId().equals());
         }
         if (filter.plateId().in() != null) {
-          return resultDataServiceGraphQLClient.getResultSetsByPlateIds(filter.plateId().in());
+          plateIds.addAll(filter.plateId().in());
         }
       }
+
       if (filter.measId() != null) {
         if (filter.measId().equals() != null) {
-          return resultDataServiceGraphQLClient.getResultSetsByMeasurementId(filter.measId().equals());
+          measurementIds.add(filter.measId().equals());
         }
         if (filter.measId().in() != null) {
-          return resultDataServiceGraphQLClient.getResultSetsByMeasurementIds(filter.measId().in());
+          measurementIds.addAll(filter.measId().in());
         }
       }
+
       if (filter.protocolId() != null) {
         if (filter.protocolId().equals() != null) {
-          return resultDataServiceGraphQLClient.getResultSetsByProtocolId(filter.protocolId().equals());
+          protocolIds.add(filter.protocolId().equals());
         }
         if (filter.protocolId().in() != null) {
-          return resultDataServiceGraphQLClient.getResultSetsByProtocolIds(filter.protocolId().in());
+          protocolIds.addAll(filter.protocolId().in());
         }
       }
-//      TODO: Is this necessary? Find use-cases for it!
-//      if (filter.executionStartTimeStamp() != null) {
-//
-//      }
-//      if (filter.executionEndTimeStamp() != null) {
-//
-//      }
-      if (filter.outcome() != null) {
 
+      if (filter.outcome() != null) {
+        status.add(filter.outcome());
       }
+
+      return resultDataServiceGraphQLClient.getResultSets(
+          new eu.openanalytics.phaedra.resultdataservice.record.ResultSetFilter(
+              resultSetIds, plateIds, measurementIds, protocolIds, status
+          )
+      );
     }
     return null;
   }
