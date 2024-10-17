@@ -31,6 +31,7 @@ import eu.openanalytics.phaedra.resultdataservice.dto.ResultSetDTO;
 import eu.openanalytics.phaedra.resultdataservice.enumeration.StatusCode;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -84,6 +85,9 @@ public class ResultSetQueryController {
               .getActivePlateMeasurements(plateIds);
           measurementIds.addAll(activeMeasurements.stream()
               .map(m -> m.getMeasurementId()).toList());
+
+          if (CollectionUtils.isNotEmpty(measurementIds))
+            logger.info("Active measurementsIds is not empty");
         }
       }
 
