@@ -434,8 +434,8 @@ input ResultSetQuery {
     executionStartTimeStamp: DateFilter
     executionEndTimeStamp: DateFilter
     outcome: StatusCode
-    activeMeasOnly: Boolean = FALSE
-    latestResultSetOnly: Boolean = FALSE
+    activeMeasOnly: Boolean = false
+    latestResultSetOnly: Boolean = false
 }
 
 input ResultDataQuery {
