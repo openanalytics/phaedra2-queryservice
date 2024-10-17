@@ -20,7 +20,8 @@
  */
 package eu.openanalytics.phaedra.queryservice.api;
 
-import static org.apache.commons.lang3.BooleanUtils.*;
+import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
+import static org.apache.commons.lang3.BooleanUtils.isTrue;
 
 import eu.openanalytics.phaedra.plateservice.client.PlateServiceGraphQLClient;
 import eu.openanalytics.phaedra.plateservice.dto.PlateMeasurementDTO;
@@ -30,7 +31,8 @@ import eu.openanalytics.phaedra.resultdataservice.dto.ResultSetDTO;
 import eu.openanalytics.phaedra.resultdataservice.enumeration.StatusCode;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.lang3.BooleanUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
@@ -41,6 +43,8 @@ public class ResultSetQueryController {
   private final ResultDataServiceGraphQLClient resultDataServiceGraphQLClient;
   private final PlateServiceGraphQLClient plateServiceGraphQLClient;
 
+  private final Logger logger = LoggerFactory.getLogger(getClass());
+
   public ResultSetQueryController(ResultDataServiceGraphQLClient resultDataServiceGraphQLClient,
       PlateServiceGraphQLClient plateServiceGraphQLClient) {
     this.resultDataServiceGraphQLClient = resultDataServiceGraphQLClient;
@@ -50,6 +54,7 @@ public class ResultSetQueryController {
   @QueryMapping
   public List<ResultSetDTO> resultSets(@Argument ResultSetQuery query) {
     if (query != null) {
+      logger.info("Query is not null");
       List<Long> resultSetIds = new ArrayList<>();
       List<Long> plateIds = new ArrayList<>();
       List<Long> measurementIds = new ArrayList<>();
@@ -66,6 +71,7 @@ public class ResultSetQueryController {
       }
 
       if (query.plateId() != null) {
+        logger.info("Query.plateId is not null");
         if (query.plateId().equals() != null) {
           plateIds.add(query.plateId().equals());
         }
@@ -73,6 +79,7 @@ public class ResultSetQueryController {
           plateIds.addAll(query.plateId().in());
         }
         if (isTrue(query.activeMeasOnly())) {
+          logger.info("Query.activeMeasOnly is true");
           List<PlateMeasurementDTO> activeMeasurements = plateServiceGraphQLClient
               .getActivePlateMeasurements(plateIds);
           measurementIds.addAll(activeMeasurements.stream()
@@ -81,6 +88,7 @@ public class ResultSetQueryController {
       }
 
       if (query.protocolId() != null) {
+        logger.info("Query.protocolId is not null");
         if (query.protocolId().equals() != null) {
           protocolIds.add(query.protocolId().equals());
         }
@@ -89,7 +97,8 @@ public class ResultSetQueryController {
         }
       }
 
-      if (isNotTrue(query.activeMeasOnly()) && query.measId() != null) {
+      if (query.measId() != null) {
+        logger.info("Query.measId is not null");
         if (query.measId().equals() != null) {
           measurementIds.add(query.measId().equals());
         }
@@ -99,6 +108,7 @@ public class ResultSetQueryController {
       }
 
       if (query.outcome() != null) {
+        logger.info("Query.outcome is not null");
         status.add(query.outcome());
       }
 
@@ -108,6 +118,7 @@ public class ResultSetQueryController {
           )
       );
     }
+    logger.info("Query is null");
     return null;
   }
 }
