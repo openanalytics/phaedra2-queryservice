@@ -290,6 +290,49 @@ type ResultSetDTO {
     errorsText: String
 }
 
+type ResultFeatureStatDTO {
+    id: ID
+    resultSetId: ID
+    featureId: ID
+    featureStatId: ID
+    statisticName: String
+    value: FloatNaN
+    welltype: String
+    statusCode: StatusCode
+    statusMessage: String
+    exitCode: Int
+    createdTimestamp: Date
+}
+
+type ResultDataDTO {
+    id: ID
+    resultSetId: ID
+    featureId: ID
+    values: [FloatNaN]
+    statusCode: StatusCode
+    statusMessage: String
+    exitCode: Int
+    createdTimestamp: Date
+    resultFeatureStats: [ResultFeatureStatDTO]
+}
+
+#type WellFeatureValue {
+#    # Protocol Info
+#    protocolId: ID
+#    # Experiment Info
+#    experimentId: ID
+#    # Plate Info
+#    plateId: ID
+#    # Well Info
+#    wellId: ID
+#    # ResultSet Info
+#    resultSetId: ID
+#    # ResultData Info
+#    resultDataId: ID
+#    featureId: ID
+#    featureValue: FloatNaN
+#}
+
 input StringFilter {
     equals: String
     startsWith: String
@@ -383,7 +426,7 @@ input WellFilter {
     properties: MetaDataFilter
 }
 
-input ResultSetFilter {
+input ResultSetQuery {
     id: IdFilter
     protocolId: IdFilter
     plateId: IdFilter
@@ -391,6 +434,15 @@ input ResultSetFilter {
     executionStartTimeStamp: DateFilter
     executionEndTimeStamp: DateFilter
     outcome: StatusCode
+    activeMeasOnly: Boolean = FALSE
+    latestResultSetOnly: Boolean = FALSE
+}
+
+input ResultDataQuery {
+    id: IdFilter
+    resultSetId: IdFilter
+    featureId: IdFilter
+    protocolId: IdFilter
 }
 
 type Query {
@@ -407,5 +459,8 @@ type Query {
     # Get a filtered list of wells that match the conditions provided by the filter input
     wells(filter: WellFilter): [WellDTO]
     # Get a filtered list of results set that match the conditions provided by the filter input
-    resultSets(filter: ResultSetFilter): [ResultSetDTO]
+    resultSets(filter: ResultSetQuery): [ResultSetDTO]
+    # Get a filtered list of the result data the match the conditions provided by the query
+    # resultData(query: ResultDataQuery): [ResultDataDTO]
+
 }

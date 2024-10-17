@@ -20,12 +20,15 @@
  */
 package eu.openanalytics.phaedra.queryservice.api;
 
-import eu.openanalytics.phaedra.queryservice.record.ResultSetFilter;
+import eu.openanalytics.phaedra.plateservice.client.PlateServiceGraphQLClient;
+import eu.openanalytics.phaedra.plateservice.dto.PlateMeasurementDTO;
+import eu.openanalytics.phaedra.queryservice.record.ResultSetQuery;
 import eu.openanalytics.phaedra.resultdataservice.client.ResultDataServiceGraphQLClient;
 import eu.openanalytics.phaedra.resultdataservice.dto.ResultSetDTO;
 import eu.openanalytics.phaedra.resultdataservice.enumeration.StatusCode;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
@@ -34,58 +37,67 @@ import org.springframework.stereotype.Controller;
 public class ResultSetQueryController {
 
   private final ResultDataServiceGraphQLClient resultDataServiceGraphQLClient;
+  private final PlateServiceGraphQLClient plateServiceGraphQLClient;
 
-  public ResultSetQueryController(ResultDataServiceGraphQLClient resultDataServiceGraphQLClient) {
+  public ResultSetQueryController(ResultDataServiceGraphQLClient resultDataServiceGraphQLClient,
+      PlateServiceGraphQLClient plateServiceGraphQLClient) {
     this.resultDataServiceGraphQLClient = resultDataServiceGraphQLClient;
+    this.plateServiceGraphQLClient = plateServiceGraphQLClient;
   }
 
   @QueryMapping
-  public List<ResultSetDTO> resultSets(@Argument ResultSetFilter filter) {
-    if (filter != null) {
+  public List<ResultSetDTO> resultSets(@Argument ResultSetQuery query) {
+    if (query != null) {
       List<Long> resultSetIds = new ArrayList<>();
       List<Long> plateIds = new ArrayList<>();
       List<Long> measurementIds = new ArrayList<>();
       List<Long> protocolIds = new ArrayList<>();
       List<StatusCode> status = new ArrayList<>();
 
-      if (filter.id() != null) {
-        if (filter.id().equals() != null) {
-          resultSetIds.add(filter.id().equals());
+      if (query.id() != null) {
+        if (query.id().equals() != null) {
+          resultSetIds.add(query.id().equals());
         }
-        if (filter.id().in() != null) {
-          resultSetIds.addAll(filter.id().in());
-        }
-      }
-
-      if (filter.plateId() != null) {
-        if (filter.plateId().equals() != null) {
-          plateIds.add(filter.plateId().equals());
-        }
-        if (filter.plateId().in() != null) {
-          plateIds.addAll(filter.plateId().in());
+        if (query.id().in() != null) {
+          resultSetIds.addAll(query.id().in());
         }
       }
 
-      if (filter.measId() != null) {
-        if (filter.measId().equals() != null) {
-          measurementIds.add(filter.measId().equals());
+      if (query.plateId() != null) {
+        if (query.plateId().equals() != null) {
+          plateIds.add(query.plateId().equals());
         }
-        if (filter.measId().in() != null) {
-          measurementIds.addAll(filter.measId().in());
+        if (query.plateId().in() != null) {
+          plateIds.addAll(query.plateId().in());
         }
-      }
-
-      if (filter.protocolId() != null) {
-        if (filter.protocolId().equals() != null) {
-          protocolIds.add(filter.protocolId().equals());
-        }
-        if (filter.protocolId().in() != null) {
-          protocolIds.addAll(filter.protocolId().in());
+        if (query.activeMeasOnly()) {
+          List<PlateMeasurementDTO> activeMeasurements = plateServiceGraphQLClient
+              .getActivePlateMeasurements(plateIds);
+          measurementIds.addAll(activeMeasurements.stream()
+              .map(m -> m.getMeasurementId()).toList());
         }
       }
 
-      if (filter.outcome() != null) {
-        status.add(filter.outcome());
+      if (query.protocolId() != null) {
+        if (query.protocolId().equals() != null) {
+          protocolIds.add(query.protocolId().equals());
+        }
+        if (query.protocolId().in() != null) {
+          protocolIds.addAll(query.protocolId().in());
+        }
+      }
+
+      if (BooleanUtils.isNotTrue(query.activeMeasOnly()) && query.measId() != null) {
+        if (query.measId().equals() != null) {
+          measurementIds.add(query.measId().equals());
+        }
+        if (query.measId().in() != null) {
+          measurementIds.addAll(query.measId().in());
+        }
+      }
+
+      if (query.outcome() != null) {
+        status.add(query.outcome());
       }
 
       return resultDataServiceGraphQLClient.getResultSets(

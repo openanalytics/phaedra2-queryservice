@@ -22,14 +22,16 @@ package eu.openanalytics.phaedra.queryservice.record;
 
 import eu.openanalytics.phaedra.resultdataservice.enumeration.StatusCode;
 
-public record ResultSetFilter(
+public record ResultSetQuery (
     IdFilter id,
     IdFilter protocolId,
     IdFilter plateId,
     IdFilter measId,
     DateFilter executionStartTimeStamp,
     DateFilter executionEndTimeStamp,
-    StatusCode outcome
+    StatusCode outcome,
+    Boolean activeMeasOnly,
+    Boolean latestResultSetOnly
 ) {
 
 }
