@@ -20,7 +20,6 @@
  */
 package eu.openanalytics.phaedra.queryservice.api;
 
-import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
 import static org.apache.commons.lang3.BooleanUtils.isTrue;
 
 import eu.openanalytics.phaedra.plateservice.client.PlateServiceGraphQLClient;
@@ -29,8 +28,11 @@ import eu.openanalytics.phaedra.queryservice.record.ResultSetQuery;
 import eu.openanalytics.phaedra.resultdataservice.client.ResultDataServiceGraphQLClient;
 import eu.openanalytics.phaedra.resultdataservice.dto.ResultSetDTO;
 import eu.openanalytics.phaedra.resultdataservice.enumeration.StatusCode;
+import eu.openanalytics.phaedra.resultdataservice.record.ResultSetFilter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,11 +58,11 @@ public class ResultSetQueryController {
   public List<ResultSetDTO> resultSets(@Argument ResultSetQuery query) {
     if (query != null) {
       logger.info("Query is not null");
-      List<Long> resultSetIds = new ArrayList<>();
-      List<Long> plateIds = new ArrayList<>();
-      List<Long> measurementIds = new ArrayList<>();
-      List<Long> protocolIds = new ArrayList<>();
-      List<StatusCode> status = new ArrayList<>();
+      Set<Long> resultSetIds = new HashSet<>();
+      Set<Long> plateIds = new HashSet<>();
+      Set<Long> measurementIds = new HashSet<>();
+      Set<Long> protocolIds = new HashSet<>();
+      Set<StatusCode> status = new HashSet<>();
 
       if (query.id() != null) {
         if (query.id().equals() != null) {
@@ -79,10 +81,10 @@ public class ResultSetQueryController {
         if (query.plateId().in() != null) {
           plateIds.addAll(query.plateId().in());
         }
-        if (isTrue(query.activeMeasOnly())) {
-          logger.info("Query.activeMeasOnly is true");
+        if (isTrue(query.activeMeasurementOnly())) {
+          logger.info("Query.activeMeasurementOnly is true");
           List<PlateMeasurementDTO> activeMeasurements = plateServiceGraphQLClient
-              .getActivePlateMeasurements(plateIds);
+              .getActivePlateMeasurements(new ArrayList<>(plateIds));
           measurementIds.addAll(activeMeasurements.stream()
               .map(m -> m.getMeasurementId()).toList());
 
@@ -117,8 +119,13 @@ public class ResultSetQueryController {
       }
 
       return resultDataServiceGraphQLClient.getResultSets(
-          new eu.openanalytics.phaedra.resultdataservice.record.ResultSetFilter(
-              resultSetIds, plateIds, measurementIds, protocolIds, status
+          new ResultSetFilter(
+              new ArrayList<>(resultSetIds),
+              new ArrayList<>(plateIds),
+              new ArrayList<>(measurementIds),
+              new ArrayList<>(protocolIds),
+              new ArrayList<>(status),
+              query.mostRecentResultSetOnly()
           )
       );
     }

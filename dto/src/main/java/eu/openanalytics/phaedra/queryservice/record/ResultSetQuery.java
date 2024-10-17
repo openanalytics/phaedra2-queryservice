@@ -30,8 +30,8 @@ public record ResultSetQuery (
     DateFilter executionStartTimeStamp,
     DateFilter executionEndTimeStamp,
     StatusCode outcome,
-    Boolean activeMeasOnly,
-    Boolean latestResultSetOnly
+    Boolean activeMeasurementOnly,
+    Boolean mostRecentResultSetOnly
 ) {
 
 }
