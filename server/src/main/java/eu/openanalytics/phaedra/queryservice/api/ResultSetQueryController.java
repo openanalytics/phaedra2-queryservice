@@ -20,6 +20,8 @@
  */
 package eu.openanalytics.phaedra.queryservice.api;
 
+import static org.apache.commons.lang3.BooleanUtils.*;
+
 import eu.openanalytics.phaedra.plateservice.client.PlateServiceGraphQLClient;
 import eu.openanalytics.phaedra.plateservice.dto.PlateMeasurementDTO;
 import eu.openanalytics.phaedra.queryservice.record.ResultSetQuery;
@@ -70,7 +72,7 @@ public class ResultSetQueryController {
         if (query.plateId().in() != null) {
           plateIds.addAll(query.plateId().in());
         }
-        if (query.activeMeasOnly()) {
+        if (isTrue(query.activeMeasOnly())) {
           List<PlateMeasurementDTO> activeMeasurements = plateServiceGraphQLClient
               .getActivePlateMeasurements(plateIds);
           measurementIds.addAll(activeMeasurements.stream()
@@ -87,7 +89,7 @@ public class ResultSetQueryController {
         }
       }
 
-      if (BooleanUtils.isNotTrue(query.activeMeasOnly()) && query.measId() != null) {
+      if (isNotTrue(query.activeMeasOnly()) && query.measId() != null) {
         if (query.measId().equals() != null) {
           measurementIds.add(query.measId().equals());
         }

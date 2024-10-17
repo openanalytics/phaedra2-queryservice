@@ -459,7 +459,7 @@ type Query {
     # Get a filtered list of wells that match the conditions provided by the filter input
     wells(filter: WellFilter): [WellDTO]
     # Get a filtered list of results set that match the conditions provided by the filter input
-    resultSets(filter: ResultSetQuery): [ResultSetDTO]
+    resultSets(query: ResultSetQuery): [ResultSetDTO]
     # Get a filtered list of the result data the match the conditions provided by the query
     # resultData(query: ResultDataQuery): [ResultDataDTO]
 
