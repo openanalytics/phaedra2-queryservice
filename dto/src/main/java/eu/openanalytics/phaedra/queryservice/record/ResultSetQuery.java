@@ -34,4 +34,13 @@ public record ResultSetQuery (
     Boolean mostRecentResultSetOnly
 ) {
 
+  public ResultSetQuery(
+      IdFilter protocolId,
+      IdFilter plateId,
+      IdFilter measId,
+      Boolean activeMeasurementOnly,
+      Boolean mostRecentResultSetOnly) {
+    this(null, protocolId, plateId, measId, null, null, null, activeMeasurementOnly,
+        mostRecentResultSetOnly);
+  }
 }

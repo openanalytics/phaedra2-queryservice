@@ -20,20 +20,10 @@
  */
 package eu.openanalytics.phaedra.queryservice.api;
 
-import static org.apache.commons.lang3.BooleanUtils.isTrue;
-
-import eu.openanalytics.phaedra.plateservice.client.PlateServiceGraphQLClient;
-import eu.openanalytics.phaedra.plateservice.dto.PlateMeasurementDTO;
 import eu.openanalytics.phaedra.queryservice.record.ResultSetQuery;
-import eu.openanalytics.phaedra.resultdataservice.client.ResultDataServiceGraphQLClient;
+import eu.openanalytics.phaedra.queryservice.service.QueryService;
 import eu.openanalytics.phaedra.resultdataservice.dto.ResultSetDTO;
-import eu.openanalytics.phaedra.resultdataservice.enumeration.StatusCode;
-import eu.openanalytics.phaedra.resultdataservice.record.ResultSetFilter;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -43,93 +33,19 @@ import org.springframework.stereotype.Controller;
 @Controller
 public class ResultSetQueryController {
 
-  private final ResultDataServiceGraphQLClient resultDataServiceGraphQLClient;
-  private final PlateServiceGraphQLClient plateServiceGraphQLClient;
+  private final QueryService queryService;
 
   private final Logger logger = LoggerFactory.getLogger(getClass());
 
-  public ResultSetQueryController(ResultDataServiceGraphQLClient resultDataServiceGraphQLClient,
-      PlateServiceGraphQLClient plateServiceGraphQLClient) {
-    this.resultDataServiceGraphQLClient = resultDataServiceGraphQLClient;
-    this.plateServiceGraphQLClient = plateServiceGraphQLClient;
+  public ResultSetQueryController(QueryService queryService) {
+    this.queryService = queryService;
   }
 
   @QueryMapping
   public List<ResultSetDTO> resultSets(@Argument ResultSetQuery query) {
     if (query != null) {
-      logger.info("Query is not null");
-      Set<Long> resultSetIds = new HashSet<>();
-      Set<Long> plateIds = new HashSet<>();
-      Set<Long> measurementIds = new HashSet<>();
-      Set<Long> protocolIds = new HashSet<>();
-      Set<StatusCode> status = new HashSet<>();
-
-      if (query.id() != null) {
-        if (query.id().equals() != null) {
-          resultSetIds.add(query.id().equals());
-        }
-        if (query.id().in() != null) {
-          resultSetIds.addAll(query.id().in());
-        }
-      }
-
-      if (query.plateId() != null) {
-        logger.info("Query.plateId is not null");
-        if (query.plateId().equals() != null) {
-          plateIds.add(query.plateId().equals());
-        }
-        if (query.plateId().in() != null) {
-          plateIds.addAll(query.plateId().in());
-        }
-        if (isTrue(query.activeMeasurementOnly())) {
-          logger.info("Query.activeMeasurementOnly is true");
-          List<PlateMeasurementDTO> activeMeasurements = plateServiceGraphQLClient
-              .getActivePlateMeasurements(new ArrayList<>(plateIds));
-          measurementIds.addAll(activeMeasurements.stream()
-              .map(m -> m.getMeasurementId()).toList());
-
-          if (CollectionUtils.isNotEmpty(measurementIds))
-            logger.info("Active measurementsIds is not empty");
-        }
-      }
-
-      if (query.protocolId() != null) {
-        logger.info("Query.protocolId is not null");
-        if (query.protocolId().equals() != null) {
-          protocolIds.add(query.protocolId().equals());
-        }
-        if (query.protocolId().in() != null) {
-          protocolIds.addAll(query.protocolId().in());
-        }
-      }
-
-      if (query.measId() != null) {
-        logger.info("Query.measId is not null");
-        if (query.measId().equals() != null) {
-          measurementIds.add(query.measId().equals());
-        }
-        if (query.measId().in() != null) {
-          measurementIds.addAll(query.measId().in());
-        }
-      }
-
-      if (query.outcome() != null) {
-        logger.info("Query.outcome is not null");
-        status.add(query.outcome());
-      }
-
-      return resultDataServiceGraphQLClient.getResultSets(
-          new ResultSetFilter(
-              new ArrayList<>(resultSetIds),
-              new ArrayList<>(plateIds),
-              new ArrayList<>(measurementIds),
-              new ArrayList<>(protocolIds),
-              new ArrayList<>(status),
-              query.mostRecentResultSetOnly()
-          )
-      );
+      return queryService.queryResultSets(query);
     }
-    logger.info("Query is null");
-    return null;
+    return List.of();
   }
 }
