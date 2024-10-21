@@ -7,8 +7,8 @@ public record ResultDataQuery(
     IdFilter measId,
     IdFilter resultSetId,
     IdFilter featureId,
-    Boolean activeMeasOnly,
-    Boolean latestResultSetOnly
+    Boolean activeMeasurementOnly,
+    Boolean mostRecentResultSetOnly
 ) {
 
 }

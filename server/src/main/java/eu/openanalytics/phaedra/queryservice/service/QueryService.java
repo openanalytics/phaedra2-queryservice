@@ -71,8 +71,8 @@ public class QueryService {
         query.protocolId(),
         query.plateId(),
         query.measId(),
-        query.activeMeasOnly(),
-        query.latestResultSetOnly());
+        query.activeMeasurementOnly(),
+        query.mostRecentResultSetOnly());
     List<ResultSetDTO> resultSets = queryResultSets(resultSetQuery);
     if (isEmpty(resultSets)) {
       resultSetIds.addAll(resultSets.stream().map(ResultSetDTO::getId).toList());

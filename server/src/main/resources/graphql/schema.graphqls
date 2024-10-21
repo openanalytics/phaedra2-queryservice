@@ -440,9 +440,13 @@ input ResultSetQuery {
 
 input ResultDataQuery {
     id: IdFilter
+    protocolId: IdFilter,
+    plateId: IdFilter,
+    measId: IdFilter,
     resultSetId: IdFilter
-    featureId: IdFilter
-    protocolId: IdFilter
+    featureId: IdFilter,
+    activeMeasurementOnly: Boolean = false
+    mostRecentResultSetOnly: Boolean = false
 }
 
 type Query {
@@ -461,6 +465,6 @@ type Query {
     # Get a filtered list of results set that match the conditions provided by the filter input
     resultSets(query: ResultSetQuery): [ResultSetDTO]
     # Get a filtered list of the result data the match the conditions provided by the query
-    # resultData(query: ResultDataQuery): [ResultDataDTO]
+    resultData(query: ResultDataQuery): [ResultDataDTO]
 
 }
