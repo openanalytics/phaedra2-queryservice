@@ -67,7 +67,7 @@ public class QueryService {
     Set<Long> featureIds = new HashSet<>();
     Set<Long> protocolIds = new HashSet<>();
 
-    ResultSetQuery resultSetQuery = new ResultSetQuery(
+    ResultSetQuery resultSetQuery = ResultSetQuery.withPartialFilter(
         query.protocolId(),
         query.plateId(),
         query.measId(),

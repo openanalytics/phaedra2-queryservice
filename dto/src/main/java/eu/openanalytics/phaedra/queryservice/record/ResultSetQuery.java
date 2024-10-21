@@ -34,40 +34,16 @@ public record ResultSetQuery (
     Boolean mostRecentResultSetOnly
 ) {
 
-  public ResultSetQuery(
-      IdFilter id,
-      IdFilter protocolId,
-      IdFilter plateId,
-      IdFilter measId,
-      DateFilter executionStartTimeStamp,
-      DateFilter executionEndTimeStamp,
-      StatusCode outcome,
-      Boolean activeMeasurementOnly,
-      Boolean mostRecentResultSetOnly
-  ) {
-    this.id = id;
-    this.protocolId = protocolId;
-    this.plateId = plateId;
-    this.measId = measId;
-    this.executionStartTimeStamp = executionStartTimeStamp;
-    this.executionEndTimeStamp = executionEndTimeStamp;
-    this.outcome = outcome;
-    this.activeMeasurementOnly = activeMeasurementOnly;
-    this.mostRecentResultSetOnly = mostRecentResultSetOnly;
-  }
-
-  public ResultSetQuery(
+  public static ResultSetQuery withPartialFilter(
       IdFilter protocolId,
       IdFilter plateId,
       IdFilter measId,
       Boolean activeMeasurementOnly,
       Boolean mostRecentResultSetOnly) {
-    this(null,
-        protocolId,
-        plateId,
-        measId,
+
+    return new ResultSetQuery(
+        null, protocolId, plateId, measId,
         null, null, null,
-        activeMeasurementOnly,
-        mostRecentResultSetOnly);
+        activeMeasurementOnly, mostRecentResultSetOnly);
   }
 }
