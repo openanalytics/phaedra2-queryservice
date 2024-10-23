@@ -20,18 +20,30 @@
  */
 package eu.openanalytics.phaedra.queryservice.record;
 
-import eu.openanalytics.phaedra.plateservice.enumeration.WellStatus;
+import eu.openanalytics.phaedra.resultdataservice.enumeration.StatusCode;
 
-public record WellFilter(
+public record ResultSetQuery (
     IdFilter id,
+    IdFilter protocolId,
     IdFilter plateId,
-    IdFilter experimentId,
-    IdFilter projectId,
-    StringFilter wellType,
-    WellStatus status,
-    StringFilter wellSubstance,
-    MetaDataFilter tags,
-    MetaDataFilter properties
+    IdFilter measId,
+    DateFilter executionStartTimeStamp,
+    DateFilter executionEndTimeStamp,
+    StatusCode outcome,
+    Boolean activeMeasurementOnly,
+    Boolean mostRecentResultSetOnly
 ) {
 
+  public static ResultSetQuery withPartialFilter(
+      IdFilter protocolId,
+      IdFilter plateId,
+      IdFilter measId,
+      Boolean activeMeasurementOnly,
+      Boolean mostRecentResultSetOnly) {
+
+    return new ResultSetQuery(
+        null, protocolId, plateId, measId,
+        null, null, null,
+        activeMeasurementOnly, mostRecentResultSetOnly);
+  }
 }

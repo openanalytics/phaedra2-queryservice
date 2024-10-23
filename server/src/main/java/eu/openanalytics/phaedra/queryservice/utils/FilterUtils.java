@@ -1,9 +1,30 @@
+/**
+ * Phaedra II
+ *
+ * Copyright (C) 2016-2024 Open Analytics
+ *
+ * ===========================================================================
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the Apache License as published by
+ * The Apache Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * Apache License for more details.
+ *
+ * You should have received a copy of the Apache License
+ * along with this program.  If not, see <http://www.apache.org/licenses/>
+ */
 package eu.openanalytics.phaedra.queryservice.utils;
 
 import eu.openanalytics.phaedra.queryservice.record.DateFilter;
 import eu.openanalytics.phaedra.queryservice.record.MetaDataFilter;
 import eu.openanalytics.phaedra.queryservice.record.StringFilter;
 
+import java.util.HashSet;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -17,15 +38,16 @@ public class FilterUtils {
       Function<T, String> getStringFunction) {
     return result.stream()
         .filter(e -> StringUtils.isBlank(stringFilter.equals())
-            || getStringFunction.apply(e).equals(stringFilter.equals()))
+            || StringUtils.equals(getStringFunction.apply(e), stringFilter.equals()))
         .filter(e -> StringUtils.isBlank(stringFilter.startsWith())
-            || getStringFunction.apply(e).startsWith(stringFilter.startsWith()))
+            || StringUtils.startsWith(getStringFunction.apply(e), stringFilter.startsWith()))
         .filter(e -> StringUtils.isBlank(stringFilter.endsWith())
-            || getStringFunction.apply(e).endsWith(stringFilter.endsWith()))
+            || StringUtils.endsWith(getStringFunction.apply(e), stringFilter.endsWith()))
         .filter(e -> StringUtils.isBlank(stringFilter.contains())
-            || getStringFunction.apply(e).contains(stringFilter.contains()))
+            || StringUtils.contains(getStringFunction.apply(e), stringFilter.contains()))
         .filter(e -> StringUtils.isBlank(stringFilter.regex())
-            || getStringFunction.apply(e).matches(stringFilter.regex()))
+            || (StringUtils.isNotBlank(getStringFunction.apply(e))
+            && getStringFunction.apply(e).matches(stringFilter.regex())))
         .toList();
   }
 
@@ -42,7 +64,7 @@ public class FilterUtils {
       Function<T, List<String>> getListStringFunction) {
     return result.stream()
         .filter(p -> CollectionUtils.isEmpty(metaDataFilter.includes())
-            || getListStringFunction.apply(p).containsAll(metaDataFilter.includes()))
+            || new HashSet<>(getListStringFunction.apply(p)).containsAll(metaDataFilter.includes()))
         .toList();
   }
 }

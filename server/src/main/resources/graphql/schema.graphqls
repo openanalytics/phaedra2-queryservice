@@ -230,6 +230,12 @@ enum WellStatus {
     REJECTED_OUTLIER_PHAEDRA_AUTO
 }
 
+enum StatusCode {
+    SCHEDULED
+    SUCCESS
+    FAILURE
+}
+
 type WellSubstanceDTO {
     id: ID
     wellId: ID
@@ -251,6 +257,81 @@ type WellDTO {
     tags: [String]
     properties: [PropertyDTO]
 }
+
+type ErrorDTO {
+    timestamp: Date
+    exceptionClassName: String
+    exceptionMessage: String
+    description: String
+    featureId: ID
+    featureName: String
+    sequenceNumber: Int
+    formulaId: ID
+    formulaName: String
+    civType: String
+    civVariableName: String
+    civSource: String
+    exitCode: Int
+    statusMessage: String
+    featureStatId: ID
+    featureStatName: String
+    newResultSetId: ID
+}
+
+type ResultSetDTO {
+    id: ID
+    protocolId: ID
+    plateId: ID
+    measId: ID
+    executionStartTimeStamp: Date
+    executionEndTimeStamp: Date
+    outcome: StatusCode
+    errors: [ErrorDTO]
+    errorsText: String
+}
+
+type ResultFeatureStatDTO {
+    id: ID
+    resultSetId: ID
+    featureId: ID
+    featureStatId: ID
+    statisticName: String
+    value: FloatNaN
+    welltype: String
+    statusCode: StatusCode
+    statusMessage: String
+    exitCode: Int
+    createdTimestamp: Date
+}
+
+type ResultDataDTO {
+    id: ID
+    resultSetId: ID
+    featureId: ID
+    values: [FloatNaN]
+    statusCode: StatusCode
+    statusMessage: String
+    exitCode: Int
+    createdTimestamp: Date
+    resultFeatureStats: [ResultFeatureStatDTO]
+}
+
+#type WellFeatureValue {
+#    # Protocol Info
+#    protocolId: ID
+#    # Experiment Info
+#    experimentId: ID
+#    # Plate Info
+#    plateId: ID
+#    # Well Info
+#    wellId: ID
+#    # ResultSet Info
+#    resultSetId: ID
+#    # ResultData Info
+#    resultDataId: ID
+#    featureId: ID
+#    featureValue: FloatNaN
+#}
 
 input StringFilter {
     equals: String
@@ -345,11 +426,45 @@ input WellFilter {
     properties: MetaDataFilter
 }
 
+input ResultSetQuery {
+    id: IdFilter
+    protocolId: IdFilter
+    plateId: IdFilter
+    measId: IdFilter
+    executionStartTimeStamp: DateFilter
+    executionEndTimeStamp: DateFilter
+    outcome: StatusCode
+    activeMeasurementOnly: Boolean = false
+    mostRecentResultSetOnly: Boolean = false
+}
+
+input ResultDataQuery {
+    id: IdFilter
+    protocolId: IdFilter,
+    plateId: IdFilter,
+    measId: IdFilter,
+    resultSetId: IdFilter
+    featureId: IdFilter,
+    activeMeasurementOnly: Boolean = false
+    mostRecentResultSetOnly: Boolean = false
+}
+
 type Query {
+    # Retrieve a plate data list for export that match the export plate data options
     exportPlateListData(exportPlateDataOptions: ExportPlateDataOptions): [PlateDataRecord]
+    # Retrieve a well data list for export that match the export well data options
     exportWellData(exportWellDataOptions: ExportWellDataOptions): [WellDataRecord]
+    # Get a filtered list of projects that match the conditions provided by the filter input
     projects(filter: ProjectFilter): [ProjectDTO]
+    # Get a filtered list of experiments that match the conditions provided by the filter input
     experiments(filter: ExperimentFilter): [ExperimentDTO]
+    # Get a filtered list of plates that match the conditions provided by the filter input
     plates(filter: PlateFilter): [PlateDTO]
+    # Get a filtered list of wells that match the conditions provided by the filter input
     wells(filter: WellFilter): [WellDTO]
+    # Get a filtered list of results set that match the conditions provided by the filter input
+    resultSets(query: ResultSetQuery): [ResultSetDTO]
+    # Get a filtered list of the result data the match the conditions provided by the query
+    resultData(query: ResultDataQuery): [ResultDataDTO]
+
 }
