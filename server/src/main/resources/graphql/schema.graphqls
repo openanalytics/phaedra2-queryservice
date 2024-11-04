@@ -111,37 +111,6 @@ type PropertyDTO {
     propertyValue: String
 }
 
-type ProjectDTO {
-    id: ID!
-    name: String
-    description: String
-
-    createdOn: Date
-    createdBy: String
-    updatedOn: Date
-    updatedBy: String
-
-    tags: [String]
-    properties: [PropertyDTO]
-}
-
-type ExperimentDTO {
-    id: ID
-    name: String
-    description: String
-    status: String
-    projectId: ID
-    multiploMethod: String
-    multiploParameter: String
-
-    createdOn: Date
-    createdBy: String
-    updatedOn: Date
-    updatedBy: String
-
-    tags: [String]
-    properties: [PropertyDTO]
-}
 
 enum LinkStatus {
     NOT_LINKED
@@ -174,6 +143,39 @@ enum UploadStatus {
     UPLOAD_NOT_SET
     UPLOAD_NOT_NEEDED
     UPLOADED
+}
+
+type ProjectDTO {
+    id: ID!
+    name: String
+    description: String
+
+    createdOn: Date
+    createdBy: String
+    updatedOn: Date
+    updatedBy: String
+
+    tags: [String]
+    properties: [PropertyDTO]
+}
+
+type ExperimentDTO {
+    id: ID
+    name: String
+    description: String
+    status: String
+    multiploMethod: String
+    multiploParameter: String
+
+    createdOn: Date
+    createdBy: String
+    updatedOn: Date
+    updatedBy: String
+
+    tags: [String]
+    properties: [PropertyDTO]
+
+    project: ProjectProjection
 }
 
 type PlateDTO {
@@ -218,6 +220,23 @@ type PlateDTO {
 
     tags: [String]
     properties: [PropertyDTO]
+
+    experiment: ExperimentProjection
+    project: ProjectProjection
+}
+
+type WellDTO {
+    id: ID
+    plateId: ID
+    row: Int
+    column: Int
+    wellNr: Int
+    wellType: String
+    status: WellStatus
+    description: String
+    wellSubstance: WellSubstanceDTO
+    tags: [String]
+    properties: [PropertyDTO]
 }
 
 enum WellStatus {
@@ -244,19 +263,7 @@ type WellSubstanceDTO {
     concentration: Float
 }
 
-type WellDTO {
-    id: ID
-    plateId: ID
-    row: Int
-    column: Int
-    wellNr: Int
-    wellType: String
-    status: WellStatus
-    description: String
-    wellSubstance: WellSubstanceDTO
-    tags: [String]
-    properties: [PropertyDTO]
-}
+
 
 type ErrorDTO {
     timestamp: Date
@@ -315,6 +322,11 @@ type ResultDataDTO {
     createdTimestamp: Date
     resultFeatureStats: [ResultFeatureStatDTO]
 }
+
+
+
+
+
 
 #type WellFeatureValue {
 #    # Protocol Info
