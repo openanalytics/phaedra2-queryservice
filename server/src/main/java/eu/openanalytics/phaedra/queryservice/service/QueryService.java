@@ -49,16 +49,14 @@ public class QueryService {
       status.add(query.outcome());
     }
 
-    return resultDataServiceGraphQLClient.getResultSets(
-        new ResultSetFilter(
-            new ArrayList<>(resultSetIds),
-            new ArrayList<>(plateIds),
-            new ArrayList<>(measurementIds),
-            new ArrayList<>(protocolIds),
-            new ArrayList<>(status),
-            query.mostRecentResultSetOnly()
-        )
-    );
+    ResultSetFilter resultSetFilter = new ResultSetFilter(
+        new ArrayList<>(resultSetIds),
+        new ArrayList<>(plateIds),
+        new ArrayList<>(measurementIds),
+        new ArrayList<>(protocolIds),
+        new ArrayList<>(status),
+        query.mostRecentResultSetOnly());
+    return resultDataServiceGraphQLClient.getResultSets(resultSetFilter);
   }
 
   public List<ResultDataDTO> queryResultData(ResultDataQuery query) {
