@@ -145,6 +145,28 @@ enum UploadStatus {
     UPLOADED
 }
 
+type ProjectProjection {
+    id: ID
+    name: String
+    description: String
+}
+
+type ExperimentProjection {
+    id: ID
+    name: String
+    description: String
+    projectId: ID
+}
+
+type PlateProjection {
+    id: ID
+    barcode: String
+    description: String
+    experimentId: ID
+    rows: Int
+    columns: Int
+}
+
 type ProjectDTO {
     id: ID!
     name: String
