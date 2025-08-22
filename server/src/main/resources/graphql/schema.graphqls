@@ -35,7 +35,7 @@ input ExportWellDataOptions {
     plateFilterOptions: PlateFilterOptions,
     includeRejectedWells: Boolean = false,
     includeInvalidatedWells: Boolean = false,
-    wellTypeFilter: [String],
+    wellTypeFilter: [String] = [],
     includeBasicCurveProperties: Boolean = true,
     includeAllCurveProperties: Boolean = false
 }
