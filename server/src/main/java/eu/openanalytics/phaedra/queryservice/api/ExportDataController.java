@@ -30,11 +30,11 @@ import eu.openanalytics.phaedra.queryservice.record.ExportPlateDataOptions;
 import eu.openanalytics.phaedra.queryservice.record.ExportWellDataOptions;
 import eu.openanalytics.phaedra.queryservice.record.FeatureInput;
 import eu.openanalytics.phaedra.queryservice.record.FeatureStatsRecord;
+import eu.openanalytics.phaedra.queryservice.record.FeatureValueRecord;
 import eu.openanalytics.phaedra.queryservice.record.PlateDataRecord;
 import eu.openanalytics.phaedra.queryservice.record.PlateFilterOptions;
 import eu.openanalytics.phaedra.queryservice.record.StatValueRecord;
 import eu.openanalytics.phaedra.queryservice.record.WellDataRecord;
-import eu.openanalytics.phaedra.queryservice.record.FeatureValueRecord;
 import eu.openanalytics.phaedra.resultdataservice.client.ResultDataServiceClient;
 import eu.openanalytics.phaedra.resultdataservice.client.exception.ResultDataUnresolvableException;
 import eu.openanalytics.phaedra.resultdataservice.client.exception.ResultFeatureStatUnresolvableException;
@@ -94,14 +94,13 @@ public class ExportDataController {
     ExperimentDTO experiment = plateServiceClient.getExperiment(exportWellDataOptions.experimentId());
     List<PlateDTO> plates = plateServiceClient.getPlatesByExperiment(exportWellDataOptions.experimentId());
 
-    List<PlateDTO> filteredPlates = plates.stream()
+    List<PlateDTO> filteredPlates = exportWellDataOptions.plateFilterOptions() != null ? plates.stream()
         .filter(plate -> isPlateFilteredByOptions(exportWellDataOptions.plateFilterOptions(), plate))
-        .toList();
+        .toList() : plates;
 
-    List<WellDataRecord> wellDataRecords = new ArrayList<>();
-    filteredPlates.stream().forEach(plate -> wellDataRecords.addAll(
-        createWellDataExportRecords(exportWellDataOptions, experiment, plate)));
-    return wellDataRecords;
+    return filteredPlates.stream()
+        .flatMap(plate -> createWellDataExportRecords(exportWellDataOptions, experiment, plate).stream())
+        .toList();
   }
 
   private boolean isPlateFilteredByOptions(PlateFilterOptions plateFilterOptions, PlateDTO plate) {
