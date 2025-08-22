@@ -106,6 +106,8 @@ public class ExportDataController {
   }
 
   private boolean isPlateFilteredByOptions(PlateFilterOptions plateFilterOptions, PlateDTO plate) {
+    if (Objects.isNull(plateFilterOptions))  return false;
+
     boolean isValidatedByEqualToInput = Objects.isNull(plateFilterOptions.validatedBy()) || plate.getValidatedBy()
         .equals(plateFilterOptions.validatedBy());
     boolean isValidatedOnNotBeforeInputEnd = Objects.isNull(plateFilterOptions.validatedOnEnd()) || !plate.getValidatedOn()
