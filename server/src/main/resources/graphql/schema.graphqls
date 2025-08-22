@@ -16,28 +16,28 @@ input PlateFilterOptions {
     approvedBy: String,
     approvedOnBegin: Date,
     approvedOnEnd: Date,
-    includeInvalidatedPlates: Boolean,
-    includeDisapprovedPlates: Boolean,
+    includeInvalidatedPlates: Boolean = false,
+    includeDisapprovedPlates: Boolean = false,
 }
 
 input ExportPlateDataOptions {
     experimentId: ID,
-    selectedFeatures: [FeatureInput],
+    selectedFeatures: [FeatureInput] = [],
     plateFilterOptions: PlateFilterOptions,
-    includeSummeryPlateSummery: Boolean,
-    includeFeatureStats: Boolean,
-    includeWellTypeFeatureStats: Boolean
+    includeSummeryPlateSummery: Boolean = false,
+    includeFeatureStats: Boolean = false,
+    includeWellTypeFeatureStats: Boolean = false
 }
 
 input ExportWellDataOptions {
     experimentId: ID,
-    selectedFeatures: [FeatureInput],
+    selectedFeatures: [FeatureInput] = [],
     plateFilterOptions: PlateFilterOptions,
-    includeRejectedWells: Boolean ,
-    includeInvalidatedWells: Boolean,
+    includeRejectedWells: Boolean = false,
+    includeInvalidatedWells: Boolean = false,
     wellTypeFilter: [String],
-    includeBasicCurveProperties: Boolean,
-    includeAllCurveProperties: Boolean
+    includeBasicCurveProperties: Boolean = true,
+    includeAllCurveProperties: Boolean = false
 }
 
 type StatValueRecord {
