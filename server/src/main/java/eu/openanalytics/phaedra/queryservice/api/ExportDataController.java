@@ -92,8 +92,7 @@ public class ExportDataController {
   public List<WellDataRecord> exportWellData(@Argument ExportWellDataOptions exportWellDataOptions)
       throws UnresolvableObjectException {
     ExperimentDTO experiment = plateServiceClient.getExperiment(exportWellDataOptions.experimentId());
-    List<PlateDTO> plates = plateServiceClient.getPlatesByExperiment(
-        exportWellDataOptions.experimentId());
+    List<PlateDTO> plates = plateServiceClient.getPlatesByExperiment(exportWellDataOptions.experimentId());
 
     List<PlateDTO> filteredPlates = plates.stream()
         .filter(plate -> isPlateFilteredByOptions(exportWellDataOptions.plateFilterOptions(), plate))
@@ -106,7 +105,7 @@ public class ExportDataController {
   }
 
   private boolean isPlateFilteredByOptions(PlateFilterOptions plateFilterOptions, PlateDTO plate) {
-    if (Objects.isNull(plateFilterOptions))  return false;
+    if (Objects.isNull(plateFilterOptions))  return true;
 
     boolean isValidatedByEqualToInput = Objects.isNull(plateFilterOptions.validatedBy()) || plate.getValidatedBy()
         .equals(plateFilterOptions.validatedBy());
